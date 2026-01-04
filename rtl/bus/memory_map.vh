@@ -1,0 +1,23 @@
+// Memory Map for ATmega328P RISC-V Replica
+// Based on ATmega328P datasheet memory organization
+
+// Program Memory (Flash equivalent)
+`define MEM_ROM_BASE    32'h00000000
+`define MEM_ROM_SIZE    32'h00010000  // 64KB
+`define MEM_ROM_MASK    32'hFFFF0000
+
+// Data Memory (SRAM equivalent)
+`define MEM_RAM_BASE    32'h10000000
+`define MEM_RAM_SIZE    32'h00001000  // 4KB
+`define MEM_RAM_MASK    32'hFFFFF000
+
+// I/O Space (Peripherals)
+`define MEM_IO_BASE     32'h20000000
+`define MEM_IO_SIZE     32'h00001000  // 4KB
+`define MEM_IO_MASK     32'hFFFFF000
+
+// GPIO Port B Registers (matching ATmega328P addresses)
+`define GPIOB_PINB      32'h20000023  // PINB - Port B Input Pins
+`define GPIOB_DDRB      32'h20000024  // DDRB - Port B Data Direction Register
+`define GPIOB_PORTB     32'h20000025  // PORTB - Port B Data Register
+

@@ -1,0 +1,26 @@
+# Build artifacts
+*.o
+*.elf
+*.hex
+*.bin
+*.mem
+*.dump
+*.vcd
+*.vvp
+
+# FPGA synthesis
+*.json
+*.asc
+*.bit
+*.rpt
+*.log
+
+# IDE files
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Testbench outputs
+testbench/firmware.mem
+

@@ -1,0 +1,39 @@
+# Makefile for Verilator simulation
+
+VERILATOR = verilator
+VERILATOR_FLAGS = --cc --exe --trace --build -Wno-UNUSEDSIGNAL -Wno-BLKSEQ -Wno-PINCONNECTEMPTY -Wno-PINMISSING -Wno-MULTITOP -Wno-GENUNNAMED -Wno-WIDTHEXPAND -Wno-DECLFILENAME
+VERILATOR_SOURCES = ../rtl/core/picorv32.v \
+                    ../rtl/memory/rom.v \
+                    ../rtl/memory/ram.v \
+                    ../rtl/peripherals/gpio.v \
+                    ../rtl/bus/bus_decoder.v \
+                    ../rtl/soc_top.v
+
+TESTBENCH = tb_soc_verilator.cpp
+FIRMWARE_MEM = firmware.mem
+
+.PHONY: all sim clean firmware
+
+all: firmware sim
+
+firmware:
+	@if [ ! -f $(FIRMWARE_MEM) ]; then \
+		echo "Building firmware..."; \
+		cd ../software/firmware && make && \
+		cp firmware.mem ../../testbench/; \
+	fi
+
+sim: $(FIRMWARE_MEM)
+	$(VERILATOR) $(VERILATOR_FLAGS) \
+		-I../rtl \
+		--top-module soc_top \
+		$(VERILATOR_SOURCES) \
+		$(TESTBENCH) \
+		-CFLAGS "-I/opt/homebrew/include" \
+		-LDFLAGS "-L/opt/homebrew/lib"
+	@cp $(FIRMWARE_MEM) obj_dir/ 2>/dev/null || true
+	cd obj_dir && ./Vsoc_top
+
+clean:
+	rm -rf obj_dir $(FIRMWARE_MEM) *.vcd
+

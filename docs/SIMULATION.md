@@ -1,0 +1,120 @@
+# Simulation Guide
+
+## Simulation Duration
+
+The simulation duration depends on which testbench and firmware you use:
+
+### Current Testbench Settings
+
+**Verilator Testbench:**
+- Maximum: 100,000 clock cycles (50,000 iterations × 2)
+- Stops early after 10 GPIO toggles are detected
+- Typical runtime: **1-5 seconds** (depending on CPU)
+
+**Icarus Verilog Testbench:**
+- Fixed duration: 100ms at 10MHz = 1,000,000 clock cycles
+- Runtime: **Several seconds to minutes** (depending on simulator speed)
+
+### Firmware Delay Impact
+
+The original `blinky.c` uses a delay of 1,000,000 × 100 = **100 million cycles** per toggle. This is:
+- **Too long for simulation** - would require hours/days to see one toggle
+- **Appropriate for hardware** - creates visible LED blinking at typical clock speeds
+
+For simulation, use `blinky_sim.c` which uses a delay of only **1,000 cycles** per toggle.
+
+## What the Simulation Verifies
+
+Once completed, the simulation will tell you:
+
+### 1. **Basic Functionality**
+- ✅ CPU boots correctly after reset
+- ✅ Program ROM loads and executes instructions
+- ✅ CPU can read from and write to memory
+- ✅ Stack pointer is initialized correctly
+
+### 2. **GPIO Peripheral**
+- ✅ GPIO registers are accessible at correct addresses (0x20000023-0x20000025)
+- ✅ DDRB register can be written (configures pin direction)
+- ✅ PORTB register can be written (drives output pins)
+- ✅ PINB register reflects pin state (for inputs)
+- ✅ GPIO pins change state when PORTB is written
+
+### 3. **Memory System**
+- ✅ Program ROM responds to instruction fetches
+- ✅ Data RAM can be read and written
+- ✅ Bus decoder routes addresses correctly
+- ✅ Memory timing is correct (ready signals work)
+
+### 4. **Program Execution**
+- ✅ Startup code (`start.S`) runs and sets up stack
+- ✅ C code executes correctly
+- ✅ Function calls work (delay function)
+- ✅ Loops execute properly
+- ✅ Bitwise operations work (XOR for toggling)
+
+### 5. **Expected Output**
+
+When simulation completes successfully, you should see:
+
+```
+Reset released at time 20
+Time 5000 (cycle 2500): GPIO_PORTB = 0x1, GPIO_DIR = 0x1
+Time 8000 (cycle 4000): GPIO_PORTB = 0x0, GPIO_DIR = 0x1
+Time 11000 (cycle 5500): GPIO_PORTB = 0x1, GPIO_DIR = 0x1
+Time 14000 (cycle 7000): GPIO_PORTB = 0x0, GPIO_DIR = 0x1
+...
+Simulation complete. GPIO toggled 10 times.
+```
+
+This confirms:
+- GPIO pin 0 (PB0) is configured as output (GPIO_DIR = 0x1)
+- PORTB bit 0 toggles between 0 and 1
+- The blinky program is running correctly
+
+### 6. **Waveform Analysis**
+
+The generated `tb_soc.vcd` file can be viewed in GTKWave to see:
+- Clock and reset signals
+- CPU memory bus transactions
+- GPIO register writes (DDRB, PORTB)
+- GPIO pin output changes
+- Memory read/write operations
+- Instruction fetch cycles
+
+## Running Simulation with Optimized Firmware
+
+To see toggles in reasonable time:
+
+1. **Build simulation firmware:**
+   ```bash
+   cd software/firmware
+   # Edit Makefile to use blinky_sim.c instead of blinky.c
+   # Or manually: riscv64-unknown-elf-gcc ... blinky_sim.c ...
+   ```
+
+2. **Run simulation:**
+   ```bash
+   cd testbench
+   make -f Makefile.verilator sim
+   ```
+
+## Troubleshooting
+
+**No GPIO toggles observed:**
+- Check that firmware.mem was generated correctly
+- Verify ROM is initialized with firmware
+- Check that delay is short enough for simulation duration
+- Look for CPU trap signals (indicates errors)
+
+**Simulation runs but shows no activity:**
+- Check reset is released
+- Verify clock is toggling
+- Look at CPU memory bus - should see instruction fetches
+- Check that program counter is incrementing
+
+**GPIO_DIR stays at 0:**
+- DDRB register write may have failed
+- Check bus decoder routes I/O addresses correctly
+- Verify GPIO module receives write transactions
+
