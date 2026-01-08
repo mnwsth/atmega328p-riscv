@@ -25,17 +25,23 @@ FIRMWARE_MEM = firmware.mem
 all: firmware sim
 
 firmware:
-	@if [ ! -f $(FIRMWARE_MEM) ]; then \
-		echo "Building firmware..."; \
-		cd ../software/firmware && make && \
-		cp firmware.mem ../../testbench/; \
-	fi
+	@echo "Building firmware..."; \
+	cd ../software/firmware && make && \
+	cp firmware.mem ../../testbench/
+
+../software/firmware/firmware.mem:
+	@echo "Building firmware..."; \
+	cd ../software/firmware && make
+
+$(FIRMWARE_MEM): ../software/firmware/firmware.mem
+	@echo "Copying firmware.mem..."; \
+	cp $< $@
 
 sim: $(VVP) $(FIRMWARE_MEM)
 	vvp $(VVP)
 
 $(VVP): $(RTL_SOURCES) $(TESTBENCH)
-	$(SIMULATOR) -o $(VVP) -I../rtl/bus $(RTL_SOURCES) $(TESTBENCH)
+	$(SIMULATOR) -o $(VVP) -I../rtl $(RTL_SOURCES) $(TESTBENCH)
 
 view: $(VCD)
 	$(VIEWER) $(VCD) &

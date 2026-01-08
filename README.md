@@ -52,18 +52,28 @@ This project implements a RISC-V based System-on-Chip (SoC) that replicates the 
 
 ## Simulation
 
-1. Install Icarus Verilog:
+1. Install simulation tools:
    ```bash
+   # Verilator (recommended, faster)
+   sudo apt-get install verilator gtkwave
+   
+   # Or Icarus Verilog (alternative)
    sudo apt-get install iverilog gtkwave
    ```
 
-2. Copy firmware.hex to testbench directory:
+2. Build firmware for simulation (uses shorter delays):
    ```bash
-   cp software/firmware/firmware.hex testbench/
+   cd software/firmware
+   make sim
    ```
 
 3. Run simulation:
    ```bash
+   # Using Verilator (recommended)
+   cd testbench
+   make -f Makefile.verilator sim
+   
+   # Or using Icarus Verilog
    cd testbench
    make sim
    ```
@@ -72,6 +82,8 @@ This project implements a RISC-V based System-on-Chip (SoC) that replicates the 
    ```bash
    make view
    ```
+   
+   **Note**: GTKWave is deprecated (discontinued upstream as of October 2025) but still functional.
 
 ## FPGA Implementation
 
@@ -80,7 +92,7 @@ This project implements a RISC-V based System-on-Chip (SoC) that replicates the 
 1. Create a new Vivado project
 2. Add all RTL sources from `rtl/` directory
 3. Add constraint file from `fpga/constraints/`
-4. Set `firmware.hex` as initialization file for ROM
+4. Set `firmware.mem` as initialization file for ROM
 5. Run synthesis, implementation, and generate bitstream
 
 ### For Lattice iCE40 (open-source toolchain)

@@ -6,21 +6,32 @@ Get up and running with the ATmega328P RISC-V replica in minutes!
 
 ### Minimum Requirements
 - RISC-V GCC toolchain
-- Icarus Verilog (for simulation)
+- Verilator or Icarus Verilog (for simulation)
 
 **Ubuntu/Debian:**
 ```bash
 sudo apt-get update
-sudo apt-get install gcc-riscv64-unknown-elf iverilog gtkwave
+sudo apt-get install gcc-riscv64-unknown-elf verilator gtkwave
+# Or use Icarus Verilog: sudo apt-get install gcc-riscv64-unknown-elf iverilog gtkwave
 ```
 
 **macOS (using Homebrew):**
 ```bash
-brew install riscv-gnu-toolchain iverilog gtkwave
+brew install riscv-gnu-toolchain verilator gtkwave
+# Or use Icarus Verilog: brew install riscv-gnu-toolchain icarus-verilog gtkwave
 ```
+
+**Note**: GTKWave is deprecated (discontinued upstream as of October 2025) but still functional. If `gtkwave` command is not found on macOS, run `brew install --cask gtkwave` to reinstall and link the binary.
 
 ## Step 2: Build the Firmware
 
+**For simulation** (recommended, uses shorter delays):
+```bash
+cd software/firmware
+make sim
+```
+
+**For hardware** (standard build):
 ```bash
 cd software/firmware
 make
@@ -30,14 +41,20 @@ This creates `firmware.mem` which will be loaded into the ROM.
 
 ## Step 3: Run Simulation
 
-From the project root:
+**Using Verilator (recommended, faster):**
 ```bash
+cd testbench
+make -f Makefile.verilator sim
+```
+
+**Using Icarus Verilog:**
+```bash
+cd testbench
 make sim
 ```
 
-Or manually:
+Or from the project root (uses Icarus Verilog):
 ```bash
-cd testbench
 make sim
 ```
 
@@ -54,6 +71,8 @@ This opens GTKWave where you can see:
 - Clock and reset signals
 - GPIO port B output (`gpio_pin_out`)
 - GPIO direction register (`gpio_pin_dir`)
+
+**Note**: GTKWave is deprecated but still functional. Alternative waveform viewers can also open the generated `.vcd` files.
 
 ## Step 5: Program FPGA (Hardware)
 

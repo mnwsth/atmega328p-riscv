@@ -18,14 +18,15 @@ module rom #(
     reg [DATA_WIDTH-1:0] mem [(1<<ADDR_WIDTH)-1:0];
     
     // Initialize memory from file if provided
+    integer i;
     initial begin
+        // First, initialize all memory with NOPs (0x00000013 = ADDI x0, x0, 0)
+        for (i = 0; i < (1<<ADDR_WIDTH); i = i + 1) begin
+            mem[i] = 32'h00000013;
+        end
+        // Then load firmware file, which will overwrite the initial NOPs
         if (INIT_FILE != "") begin
-            $readmemh(INIT_FILE, mem);
-        end else begin
-            // Initialize with NOPs (0x00000013 = ADDI x0, x0, 0)
-            for (integer i = 0; i < (1<<ADDR_WIDTH); i = i + 1) begin
-                mem[i] = 32'h00000013;
-            end
+            $readmemh(INIT_FILE, mem, 0, (1<<ADDR_WIDTH)-1);
         end
     end
     

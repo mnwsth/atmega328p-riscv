@@ -74,13 +74,15 @@ This confirms:
 
 ### 6. **Waveform Analysis**
 
-The generated `tb_soc.vcd` file can be viewed in GTKWave to see:
+The generated `tb_soc.vcd` file can be viewed in GTKWave or other VCD viewers to see:
 - Clock and reset signals
 - CPU memory bus transactions
 - GPIO register writes (DDRB, PORTB)
 - GPIO pin output changes
 - Memory read/write operations
 - Instruction fetch cycles
+
+**Note**: GTKWave is deprecated and discontinued upstream (as of October 2025), but still functional. Alternative waveform viewers (WaveTrace, Sigrok/PulseView, etc.) can also open VCD files.
 
 ## Running Simulation with Optimized Firmware
 

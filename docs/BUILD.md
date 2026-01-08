@@ -7,12 +7,22 @@ This document provides detailed instructions for building and testing the ATmega
 ### Software Tools
 
 1. **RISC-V Toolchain**
-   - Install GCC for RISC-V: `sudo apt-get install gcc-riscv64-unknown-elf`
+   - **Linux**: `sudo apt-get install gcc-riscv64-unknown-elf`
+   - **macOS**: `brew install riscv-gnu-toolchain`
    - Or build from source: https://github.com/riscv/riscv-gnu-toolchain
 
 2. **Simulation Tools**
-   - Icarus Verilog: `sudo apt-get install iverilog`
-   - GTKWave (optional, for waveform viewing): `sudo apt-get install gtkwave`
+   - **Verilator** (recommended, faster simulation)
+     - Linux: `sudo apt-get install verilator`
+     - macOS: `brew install verilator`
+   - **Icarus Verilog** (alternative simulator)
+     - Linux: `sudo apt-get install iverilog`
+     - macOS: `brew install icarus-verilog`
+   - **GTKWave** (optional, for waveform viewing)
+     - ⚠️ **Note**: GTKWave is deprecated and discontinued upstream (as of October 2025), but still functional
+     - Linux: `sudo apt-get install gtkwave`
+     - macOS: `brew install gtkwave` (may require reinstall to link binary to PATH)
+     - Alternatives: WaveTrace, Sigrok/PulseView, or other VCD viewers
 
 3. **FPGA Tools** (choose based on your FPGA)
    - **Xilinx**: Vivado (free WebPack version)
@@ -37,6 +47,12 @@ This document provides detailed instructions for building and testing the ATmega
    - `firmware.bin` - Binary format
    - `firmware.mem` - Memory initialization file for Verilog
 
+   **For simulation** (shorter delays, faster to run):
+   ```bash
+   make sim
+   ```
+   This builds with `blinky_sim.c` which uses shorter delays suitable for simulation.
+
 3. Check the size:
    ```bash
    make size
@@ -45,14 +61,24 @@ This document provides detailed instructions for building and testing the ATmega
 ## Running Simulation
 
 1. Build the firmware first (see above)
+   - For simulation, use `make sim` in the firmware directory to build with shorter delays
+   - For hardware, use `make` (standard build)
 
 2. Run the simulation:
+
+   **Using Verilator (recommended, faster):**
+   ```bash
+   cd testbench
+   make -f Makefile.verilator sim
+   ```
+
+   **Using Icarus Verilog:**
    ```bash
    cd testbench
    make sim
    ```
 
-   Or from the root directory:
+   Or from the root directory (uses Icarus Verilog by default):
    ```bash
    make sim
    ```
@@ -62,7 +88,7 @@ This document provides detailed instructions for building and testing the ATmega
    make view
    ```
 
-   This opens GTKWave with the simulation results.
+   This opens GTKWave with the simulation results. Note: GTKWave is deprecated but still functional.
 
 ## FPGA Implementation
 
@@ -92,14 +118,14 @@ This document provides detailed instructions for building and testing the ATmega
 
 1. Install tools:
    ```bash
-   # Yosys
-   sudo apt-get install yosys
+   # Linux
+   sudo apt-get install yosys fpga-icestorm
    
-   # nextpnr
+   # macOS
+   brew install yosys icestorm
+   
+   # nextpnr (both platforms)
    # Build from source: https://github.com/YosysHQ/nextpnr
-   
-   # icepack
-   sudo apt-get install fpga-icestorm
    ```
 
 2. Build:
@@ -131,8 +157,11 @@ This document provides detailed instructions for building and testing the ATmega
 
 ### Simulation Issues
 
+- **iverilog not found**: Install Icarus Verilog using the platform-specific instructions above
+- **verilator not found**: Install Verilator using the platform-specific instructions above
 - **ROM not initialized**: Ensure `firmware.mem` exists in `testbench/` directory
 - **No waveforms**: Check that VCD file is generated and GTKWave can open it
+- **gtkwave command not found** (macOS): Run `brew install --cask gtkwave` to reinstall and link the binary
 
 ### FPGA Issues
 
