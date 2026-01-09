@@ -1,6 +1,8 @@
 // GPIO Peripheral - Port B and Port D
 // Implements ATmega328P-style GPIO registers:
 // Port B: PINB, DDRB, PORTB
+// Port B: PINB, DDRB, PORTB
+// Port C: PINC, DDRC, PORTC
 // Port D: PIND, DDRD, PORTD
 
 `include "bus/memory_map.vh"
@@ -25,7 +27,12 @@ module gpio (
     // GPIO Port D pins
     input  wire [7:0]  gpio_pin_in_d,   // Port D actual pin input
     output reg  [7:0]  gpio_pin_out_d,  // Port D pin output value
-    output reg  [7:0]  gpio_pin_dir_d   // Port D pin direction (1=out, 0=in)
+    output reg  [7:0]  gpio_pin_dir_d,  // Port D pin direction (1=out, 0=in)
+
+    // GPIO Port C pins
+    input  wire [7:0]  gpio_pin_in_c,   // Port C actual pin input
+    output reg  [7:0]  gpio_pin_out_c,  // Port C pin output value
+    output reg  [7:0]  gpio_pin_dir_c   // Port C pin direction (1=out, 0=in)
 );
 
     // Internal registers - Port B
@@ -35,6 +42,10 @@ module gpio (
     // Internal registers - Port D
     reg [7:0] ddrd;   // Data Direction Register D
     reg [7:0] portd;  // Port D Data Register
+
+    // Internal registers - Port C
+    reg [7:0] ddrc;   // Data Direction Register C
+    reg [7:0] portc;  // Port C Data Register
     
     // Address decoding - Port B
     wire sel_pinb  = (mem_addr == `GPIOB_PINB);
@@ -45,8 +56,13 @@ module gpio (
     wire sel_pind  = (mem_addr == `GPIOD_PIND);
     wire sel_ddrd  = (mem_addr == `GPIOD_DDRD);
     wire sel_portd = (mem_addr == `GPIOD_PORTD);
+
+    // Address decoding - Port C
+    wire sel_pinc  = (mem_addr == `GPIOC_PINC);
+    wire sel_ddrc  = (mem_addr == `GPIOC_DDRC);
+    wire sel_portc = (mem_addr == `GPIOC_PORTC);
     
-    wire gpio_sel  = sel_pinb | sel_ddrb | sel_portb | sel_pind | sel_ddrd | sel_portd;
+    wire gpio_sel  = sel_pinb | sel_ddrb | sel_portb | sel_pind | sel_ddrd | sel_portd | sel_pinc | sel_ddrc | sel_portc;
     
     // Read logic
     always @(*) begin
@@ -59,6 +75,9 @@ module gpio (
                 `GPIOD_PIND:  mem_rdata = {24'h000000, gpio_pin_in_d};   // Read actual pin state
                 `GPIOD_DDRD:  mem_rdata = {24'h000000, ddrd};
                 `GPIOD_PORTD: mem_rdata = {24'h000000, portd};
+                `GPIOC_PINC:  mem_rdata = {24'h000000, gpio_pin_in_c};   // Read actual pin state
+                `GPIOC_DDRC:  mem_rdata = {24'h000000, ddrc};
+                `GPIOC_PORTC: mem_rdata = {24'h000000, portc};
                 default:      mem_rdata = 32'h00000000;
             endcase
         end
@@ -71,6 +90,8 @@ module gpio (
             portb <= 8'h00;
             ddrd  <= 8'h00;
             portd <= 8'h00;
+            ddrc  <= 8'h00;
+            portc <= 8'h00;
         end else if (mem_valid && gpio_sel && |mem_wstrb) begin
             case (mem_addr)
                 `GPIOB_DDRB: begin
@@ -85,7 +106,13 @@ module gpio (
                 `GPIOD_PORTD: begin
                     if (mem_wstrb[0]) portd <= mem_wdata[7:0];
                 end
-                // PINB and PIND are read-only, ignore writes
+                `GPIOC_DDRC: begin
+                    if (mem_wstrb[0]) ddrc <= mem_wdata[7:0];
+                end
+                `GPIOC_PORTC: begin
+                    if (mem_wstrb[0]) portc <= mem_wdata[7:0];
+                end
+                // PINB, PIND, PINC are read-only, ignore writes
             endcase
         end
     end
@@ -108,6 +135,10 @@ module gpio (
         // Port D
         gpio_pin_dir_d = ddrd;
         gpio_pin_out_d = portd;
+
+        // Port C
+        gpio_pin_dir_c = ddrc;
+        gpio_pin_out_c = portc;
     end
 
 endmodule
