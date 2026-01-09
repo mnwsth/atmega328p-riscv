@@ -89,11 +89,41 @@ module tb_soc;
         $dumpfile("tb_soc.vcd");
         $dumpvars(0, tb_soc);
         
-        // Run for a while to see LED toggle
-        #100000000;  // 100ms at 10MHz
+        // Run for a short time first to debug
+        #10000000;  // 10ms at 10MHz = 100,000 cycles
         
         $display("Simulation complete");
+        $display("Final GPIO_PORTB = 0x%02x, GPIO_DIR_B = 0x%02x", gpio_pin_out_b, gpio_pin_dir_b);
         $finish;
+    end
+    
+    // Monitor CPU trap
+    always @(posedge clk) begin
+        if (dut.cpu_trap) begin
+            $display("ERROR: CPU TRAP detected at time %0t", $time);
+        end
+    end
+    
+    // One-time status at startup
+    initial begin
+        #10000; // After 10us
+        $display("Status at 10us: GPIO_PORTB = 0x%02x, GPIO_DIR_B = 0x%02x", gpio_pin_out_b, gpio_pin_dir_b);
+        #90000; // After 100us total
+        $display("Status at 100us: GPIO_PORTB = 0x%02x, GPIO_DIR_B = 0x%02x", gpio_pin_out_b, gpio_pin_dir_b);
+    end
+
+    // Monitor GPIO Port C output
+    reg [7:0] prev_gpio_out_c;
+    initial begin
+        prev_gpio_out_c = 8'h00;
+        forever begin
+            @(posedge clk);
+            if (gpio_pin_out_c != prev_gpio_out_c) begin
+                $display("Time %0t: GPIO_PORTC = 0x%02x, GPIO_DIR_C = 0x%02x", 
+                         $time, gpio_pin_out_c, gpio_pin_dir_c);
+                prev_gpio_out_c = gpio_pin_out_c;
+            end
+        end
     end
 
     // Monitor GPIO Port C output

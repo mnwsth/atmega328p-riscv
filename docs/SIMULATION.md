@@ -35,12 +35,14 @@ Once completed, the simulation will tell you:
 
 ### 2. **GPIO Peripheral**
 - ✅ GPIO Port B registers are accessible at correct addresses (0x20000023-0x20000025)
+- ✅ GPIO Port C registers are accessible at correct addresses (0x20000026-0x20000028)
 - ✅ GPIO Port D registers are accessible at correct addresses (0x20000029-0x2000002B)
-- ✅ DDRB/DDRD registers can be written (configures pin direction)
-- ✅ PORTB/PORTD registers can be written (drives output pins)
-- ✅ PINB/PIND registers reflect pin state (for inputs)
-- ✅ GPIO pins change state when PORTB/PORTD are written
-- ✅ Port B and Port D operate independently
+- ✅ DDR registers can be written (configures pin direction)
+- ✅ PORT registers can be written (drives output pins)
+- ✅ PIN registers reflect pin state (for inputs)
+- ✅ GPIO pins change state when PORT registers are written
+- ✅ All three ports (B, C, D) operate independently
+- ✅ Word-aligned bus protocol with byte strobes works correctly
 
 ### 3. **Memory System**
 - ✅ Program ROM responds to instruction fetches

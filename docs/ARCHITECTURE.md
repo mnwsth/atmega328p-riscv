@@ -103,7 +103,7 @@ This project implements a RISC-V based System-on-Chip (SoC) that replicates the 
 - **Port C Registers**: PINC, DDRC, PORTC (matching ATmega328P)
 - **Port D Registers**: PIND, DDRD, PORTD (matching ATmega328P)
 - **Functionality**:
-  - 8-bit bidirectional I/O ports (16 total pins)
+  - 23 bidirectional I/O pins total (8 + 8 + 7)
   - Configurable direction per pin
   - Read actual pin state (PINB, PINC, PIND)
   - Drive output pins (PORTB, PORTC, PORTD)
@@ -111,15 +111,29 @@ This project implements a RISC-V based System-on-Chip (SoC) that replicates the 
 
 ## Bus Protocol
 
-The system uses a simple memory-mapped bus protocol:
+The system uses PicoRV32's memory bus protocol with **word-aligned addressing**:
 
-- **Address**: 32-bit byte address
-- **Write Data**: 32-bit word with 4-bit byte enables
+- **Address**: 32-bit address (bits [1:0] always 00 for word alignment)
+- **Write Data**: 32-bit word with 4-bit byte enables (`wstrb`)
 - **Read Data**: 32-bit word
 - **Control Signals**:
   - `mem_valid`: Request valid
   - `mem_ready`: Response ready
-  - `mem_wstrb`: Write strobe (byte enables)
+  - `mem_wstrb`: Write strobe (byte enables, one-hot for byte access)
+
+### Word-Aligned GPIO Register Mapping
+
+Since PicoRV32 sends word-aligned addresses, GPIO registers are grouped into 32-bit words:
+
+| Word Address | Byte 0 | Byte 1 | Byte 2 | Byte 3 |
+|--------------|--------|--------|--------|--------|
+| 0x20000020   | -      | -      | -      | PINB   |
+| 0x20000024   | DDRB   | PORTB  | PINC   | DDRC   |
+| 0x20000028   | PORTC  | PIND   | DDRD   | PORTD  |
+
+When accessing a byte-addressed register (e.g., PORTB at 0x25):
+- CPU sends word address 0x24 with `wstrb=0010`
+- GPIO module extracts data from bits [15:8] of the data bus
 
 ## Clock and Reset
 
@@ -166,7 +180,8 @@ The system uses a simple memory-mapped bus protocol:
 ## Design Notes
 
 1. **Endianness**: The system uses little-endian byte ordering (standard for RISC-V)
-2. **Address Alignment**: All memory accesses are word-aligned (4-byte boundaries)
+2. **Address Alignment**: PicoRV32 uses word-aligned addresses with byte strobes for sub-word access
 3. **Memory Timing**: All memories respond in a single cycle (combinational read, registered write)
 4. **GPIO Timing**: GPIO registers are synchronous, responding in one clock cycle
+5. **Byte Strobes**: `wstrb[3:0]` indicates which byte lane within a word is being accessed
 
