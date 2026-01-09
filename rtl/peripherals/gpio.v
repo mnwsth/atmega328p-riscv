@@ -1,4 +1,4 @@
-// GPIO Peripheral - Port B and Port D
+// GPIO Peripheral - Port B, Port C and Port D
 // Implements ATmega328P-style GPIO registers:
 // Port B: PINB, DDRB, PORTB
 // Port C: PINC, DDRC, PORTC
