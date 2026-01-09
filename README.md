@@ -54,11 +54,15 @@ This project implements a RISC-V based System-on-Chip (SoC) that replicates the 
 
 1. Install simulation tools:
    ```bash
-   # Verilator (recommended, faster)
+   # Linux - Verilator (recommended, faster)
    sudo apt-get install verilator gtkwave
    
-   # Or Icarus Verilog (alternative)
+   # Linux - Or Icarus Verilog (alternative)
    sudo apt-get install iverilog gtkwave
+   
+   # macOS - Verilator
+   brew install verilator
+   # macOS - Waveform viewer: Install NovyWave from https://github.com/NovyWave/NovyWave/releases
    ```
 
 2. Build firmware for simulation (uses shorter delays):
@@ -83,7 +87,10 @@ This project implements a RISC-V based System-on-Chip (SoC) that replicates the 
    make view
    ```
    
-   **Note**: GTKWave is deprecated (discontinued upstream as of October 2025) but still functional.
+   **Note**: 
+   - **macOS**: NovyWave is recommended (native app, supports macOS 14+). The Makefile copies VCD files to `/tmp/vcs_files/` for easy access. In NovyWave, click "Load Files" and navigate to `tmp` → `vcs_files` to load the file. Cleanup: `rm -rf /tmp/vcs_files`
+   - **Linux**: GTKWave works well and opens directly
+   - GTKWave is deprecated and incompatible with macOS 14+
 
 ## FPGA Implementation
 

@@ -1,7 +1,13 @@
 # Makefile for simulation
 
 SIMULATOR = iverilog
-VIEWER = gtkwave
+# Use NovyWave on macOS (native, supports macOS 14+), fallback to gtkwave on Linux
+UNAME_S := $(shell uname -s)
+ifeq ($(UNAME_S),Darwin)
+	VIEWER = /Applications/NovyWave.app/Contents/MacOS/novywave
+else
+	VIEWER = gtkwave
+endif
 
 # Source files
 RTL_SOURCES = ../rtl/core/picorv32.v \
@@ -44,8 +50,20 @@ $(VVP): $(RTL_SOURCES) $(TESTBENCH)
 	$(SIMULATOR) -o $(VVP) -I../rtl $(RTL_SOURCES) $(TESTBENCH)
 
 view: $(VCD)
+ifeq ($(UNAME_S),Darwin)
+	@echo "Copying VCD file to /tmp/vcs_files for NovyWave access..."
+	@mkdir -p /tmp/vcs_files
+	@cp $(VCD) /tmp/vcs_files/tb_soc.vcd
+	@echo "Opening NovyWave..."
+	@echo "  -> Click 'Load Files' button"
+	@echo "  -> Navigate to 'tmp' -> 'vcs_files' directory"
+	@echo "  -> Select 'tb_soc.vcd'"
+	@open -a NovyWave &
+else
 	$(VIEWER) $(VCD) &
+endif
 
 clean:
 	rm -f $(VVP) $(VCD) $(FIRMWARE_MEM)
+	@echo "To clean VCD files in /tmp/vcs_files, run: rm -rf /tmp/vcs_files"
 

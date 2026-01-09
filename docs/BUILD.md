@@ -18,11 +18,12 @@ This document provides detailed instructions for building and testing the ATmega
    - **Icarus Verilog** (alternative simulator)
      - Linux: `sudo apt-get install iverilog`
      - macOS: `brew install icarus-verilog`
-   - **GTKWave** (optional, for waveform viewing)
-     - ⚠️ **Note**: GTKWave is deprecated and discontinued upstream (as of October 2025), but still functional
-     - Linux: `sudo apt-get install gtkwave`
-     - macOS: `brew install gtkwave` (may require reinstall to link binary to PATH)
-     - Alternatives: WaveTrace, Sigrok/PulseView, or other VCD viewers
+   - **Waveform Viewer** (optional, for viewing VCD files)
+     - **Linux**: `sudo apt-get install gtkwave`
+     - **macOS**: 
+       - **NovyWave** (recommended): Native macOS app, supports macOS 14+. Download from [GitHub Releases](https://github.com/NovyWave/NovyWave/releases) - install the `.dmg` for your architecture (aarch64 for Apple Silicon, x64 for Intel).
+       - **GTKWave** (alternative): ⚠️ Deprecated and incompatible with macOS 14+. If you need gtkwave on macOS, you may need to build from source or use Linux.
+     - Other alternatives: WaveTrace, Sigrok/PulseView, or other VCD viewers
 
 3. **FPGA Tools** (choose based on your FPGA)
    - **Xilinx**: Vivado (free WebPack version)
@@ -88,7 +89,16 @@ This document provides detailed instructions for building and testing the ATmega
    make view
    ```
 
-   This opens GTKWave with the simulation results. Note: GTKWave is deprecated but still functional.
+   This opens NovyWave (on macOS) or GTKWave (on Linux) with the simulation results. On macOS, NovyWave is recommended as it's native and supports macOS 14+.
+
+   **Loading files in NovyWave (macOS)**: The Makefile automatically copies the VCD file to `/tmp/vcs_files/`. In NovyWave:
+   - Click "Load Files" button
+   - Navigate to `tmp` → `vcs_files` directory
+   - Select `tb_soc.vcd`
+   
+   **Note**: NovyWave's file picker doesn't show `/Users` directory on macOS. The file is copied to `/tmp/vcs_files/` to work around this limitation.
+   
+   **Cleanup**: To remove VCD files from `/tmp/vcs_files/`, run: `rm -rf /tmp/vcs_files`
 
 ## FPGA Implementation
 
@@ -160,8 +170,10 @@ This document provides detailed instructions for building and testing the ATmega
 - **iverilog not found**: Install Icarus Verilog using the platform-specific instructions above
 - **verilator not found**: Install Verilator using the platform-specific instructions above
 - **ROM not initialized**: Ensure `firmware.mem` exists in `testbench/` directory
-- **No waveforms**: Check that VCD file is generated and GTKWave can open it
-- **gtkwave command not found** (macOS): Run `brew install --cask gtkwave` to reinstall and link the binary
+- **No waveforms**: Check that VCD file is generated and your waveform viewer can open it
+- **Waveform viewer not found**:
+  - **macOS**: Install NovyWave from [GitHub Releases](https://github.com/NovyWave/NovyWave/releases) (recommended) or try building gtkwave from source
+  - **Linux**: Install gtkwave with `sudo apt-get install gtkwave`
 
 ### FPGA Issues
 

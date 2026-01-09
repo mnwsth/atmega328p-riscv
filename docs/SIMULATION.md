@@ -74,7 +74,7 @@ This confirms:
 
 ### 6. **Waveform Analysis**
 
-The generated `tb_soc.vcd` file can be viewed in GTKWave or other VCD viewers to see:
+The generated `tb_soc.vcd` file can be viewed in a waveform viewer to see:
 - Clock and reset signals
 - CPU memory bus transactions
 - GPIO register writes (DDRB, PORTB)
@@ -82,7 +82,16 @@ The generated `tb_soc.vcd` file can be viewed in GTKWave or other VCD viewers to
 - Memory read/write operations
 - Instruction fetch cycles
 
-**Note**: GTKWave is deprecated and discontinued upstream (as of October 2025), but still functional. Alternative waveform viewers (WaveTrace, Sigrok/PulseView, etc.) can also open VCD files.
+**Waveform Viewer Options**:
+- **Linux**: Use GTKWave (`sudo apt-get install gtkwave`) - opens directly with `make view`
+- **macOS**: Use NovyWave (recommended, native macOS app, supports macOS 14+) - download from [GitHub Releases](https://github.com/NovyWave/NovyWave/releases)
+  - The Makefile automatically copies VCD files to `/tmp/vcs_files/` for NovyWave access
+  - In NovyWave: Click "Load Files" → Navigate to `tmp` → `vcs_files` → Select `tb_soc.vcd`
+  - **Note**: NovyWave's file picker doesn't show `/Users` directory on macOS due to security restrictions
+  - **Cleanup**: Run `rm -rf /tmp/vcs_files` to remove VCD files when done
+- **Other platforms**: Any VCD-compatible viewer (WaveTrace, Sigrok/PulseView, etc.)
+
+**Note**: GTKWave is deprecated and discontinued upstream (as of October 2025) and incompatible with macOS 14+. NovyWave is the recommended alternative for macOS users.
 
 ## Running Simulation with Optimized Firmware
 

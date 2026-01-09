@@ -17,11 +17,13 @@ sudo apt-get install gcc-riscv64-unknown-elf verilator gtkwave
 
 **macOS (using Homebrew):**
 ```bash
-brew install riscv-gnu-toolchain verilator gtkwave
-# Or use Icarus Verilog: brew install riscv-gnu-toolchain icarus-verilog gtkwave
+brew install riscv-gnu-toolchain verilator
+# Or use Icarus Verilog: brew install riscv-gnu-toolchain icarus-verilog
 ```
 
-**Note**: GTKWave is deprecated (discontinued upstream as of October 2025) but still functional. If `gtkwave` command is not found on macOS, run `brew install --cask gtkwave` to reinstall and link the binary.
+**Waveform Viewer for macOS:**
+- **NovyWave** (recommended): Native macOS app, supports macOS 14+. Download from [GitHub Releases](https://github.com/NovyWave/NovyWave/releases) - install the `.dmg` for your architecture (aarch64 for Apple Silicon, x64 for Intel).
+- **GTKWave**: Deprecated and incompatible with macOS 14+. Not recommended for macOS users.
 
 ## Step 2: Build the Firmware
 
@@ -67,12 +69,25 @@ cd testbench
 make view
 ```
 
-This opens GTKWave where you can see:
+This opens NovyWave (on macOS) or GTKWave (on Linux) where you can see:
 - Clock and reset signals
 - GPIO port B output (`gpio_pin_out`)
 - GPIO direction register (`gpio_pin_dir`)
 
-**Note**: GTKWave is deprecated but still functional. Alternative waveform viewers can also open the generated `.vcd` files.
+### Loading Waveforms in NovyWave (macOS)
+
+On macOS, `make view` automatically copies the VCD file to `/tmp/vcs_files/` for easy access. To load the file:
+
+1. In NovyWave, click the **"Load Files"** button in the "Files & Scopes" panel
+2. Navigate to **`tmp`** directory (visible in the file picker)
+3. Open the **`vcs_files`** subdirectory
+4. Select **`tb_soc.vcd`**
+
+**Note**: NovyWave's file picker on macOS doesn't show the `/Users` directory due to macOS security restrictions. The VCD file is automatically copied to `/tmp/vcs_files/` to work around this limitation.
+
+**To clean up VCD files**: Run `rm -rf /tmp/vcs_files` when you're done viewing waveforms.
+
+**Note**: On macOS, NovyWave is the recommended waveform viewer as it's native and supports macOS 14+. The generated `.vcd` files can also be opened in other VCD-compatible viewers.
 
 ## Step 5: Program FPGA (Hardware)
 
