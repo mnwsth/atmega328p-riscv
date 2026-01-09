@@ -111,8 +111,8 @@ On macOS, `make view` automatically copies the VCD file to `/tmp/vcs_files/` for
 
 ## What's Next?
 
-- Modify `software/firmware/blinky.c` to change the blink pattern
-- Add more GPIO ports (Port C)
+- Modify `software/firmware/blinky.c` to change the blinky pattern
+- Use GPIO Port C (Port C is now implemented!)
 - Implement additional peripherals (UART, timers)
 - See `BUILD.md` for detailed instructions
 
