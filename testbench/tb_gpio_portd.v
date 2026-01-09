@@ -53,14 +53,24 @@ module tb_gpio_portd;
         forever #50 clk = ~clk;
     end
     
-    // Test task: Write to register
-    task write_reg(input [31:0] addr, input [7:0] data);
+    // Test task: Write to register (using word-aligned bus protocol)
+    task write_reg(input [31:0] byte_addr, input [7:0] data);
+        reg [31:0] word_addr;
+        reg [1:0] byte_offset;
         begin
+            word_addr = {byte_addr[31:2], 2'b00};
+            byte_offset = byte_addr[1:0];
+            
+            mem_addr = word_addr;
+            case (byte_offset)
+                2'b00: begin mem_wdata = {24'h000000, data}; mem_wstrb = 4'b0001; end
+                2'b01: begin mem_wdata = {16'h0000, data, 8'h00}; mem_wstrb = 4'b0010; end
+                2'b10: begin mem_wdata = {8'h00, data, 16'h0000}; mem_wstrb = 4'b0100; end
+                2'b11: begin mem_wdata = {data, 24'h000000}; mem_wstrb = 4'b1000; end
+            endcase
+            
             @(posedge clk);
             mem_valid = 1'b1;
-            mem_addr = addr;
-            mem_wdata = {24'h000000, data};
-            mem_wstrb = 4'b0001;
             @(posedge clk);
             wait(mem_ready);
             @(posedge clk);
@@ -70,16 +80,31 @@ module tb_gpio_portd;
         end
     endtask
     
-    // Test task: Read from register
-    task read_reg(input [31:0] addr, output [7:0] data);
+    // Test task: Read from register (using word-aligned bus protocol)
+    task read_reg(input [31:0] byte_addr, output [7:0] data);
+        reg [31:0] word_addr;
+        reg [1:0] byte_offset;
+        reg [31:0] word_data;
         begin
+            word_addr = {byte_addr[31:2], 2'b00};
+            byte_offset = byte_addr[1:0];
+            
+            mem_addr = word_addr;
+            mem_wstrb = 4'b0000;
+            
             @(posedge clk);
             mem_valid = 1'b1;
-            mem_addr = addr;
-            mem_wstrb = 4'b0000;
             @(posedge clk);
             wait(mem_ready);
-            data = mem_rdata[7:0];
+            word_data = mem_rdata;
+            
+            case (byte_offset)
+                2'b00: data = word_data[7:0];
+                2'b01: data = word_data[15:8];
+                2'b10: data = word_data[23:16];
+                2'b11: data = word_data[31:24];
+            endcase
+            
             @(posedge clk);
             mem_valid = 1'b0;
             #100;
