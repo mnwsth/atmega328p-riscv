@@ -82,6 +82,24 @@ portd_sim: $(PORTD_SIM_OBJECTS) linker.ld
 	python3 ../../software/tools/hex2mem.py $(HEX) $(MEM)
 	$(SIZE) $(ELF)
 
+# Hardware build using Port C firmware
+portc: $(PORTC_OBJECTS) linker.ld
+	$(CC) $(LDFLAGS) -o $(ELF) $(PORTC_OBJECTS)
+	$(OBJDUMP) -d $(ELF) > $(DUMP)
+	$(OBJCOPY) -O ihex $(ELF) $(HEX)
+	$(OBJCOPY) -O binary $(ELF) $(BIN)
+	python3 ../../software/tools/hex2mem.py $(HEX) $(MEM)
+	$(SIZE) $(ELF)
+
+# Simulation build using Port C firmware
+portc_sim: $(PORTC_SIM_OBJECTS) linker.ld
+	$(CC) $(LDFLAGS) -o $(ELF) $(PORTC_SIM_OBJECTS)
+	$(OBJDUMP) -d $(ELF) > $(DUMP)
+	$(OBJCOPY) -O ihex $(ELF) $(HEX)
+	$(OBJCOPY) -O binary $(ELF) $(BIN)
+	python3 ../../software/tools/hex2mem.py $(HEX) $(MEM)
+	$(SIZE) $(ELF)
+
 $(ELF): $(OBJECTS) linker.ld
 	$(CC) $(LDFLAGS) -o $@ $(OBJECTS)
 	$(OBJDUMP) -d $@ > $(DUMP)
