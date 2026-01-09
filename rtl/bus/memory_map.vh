@@ -26,3 +26,8 @@
 `define GPIOD_DDRD      32'h2000002A  // DDRD - Port D Data Direction Register
 `define GPIOD_PORTD     32'h2000002B  // PORTD - Port D Data Register
 
+// GPIO Port C Registers (matching ATmega328P addresses)
+`define GPIOC_PINC      32'h20000026  // PINC - Port C Input Pins
+`define GPIOC_DDRC      32'h20000027  // DDRC - Port C Data Direction Register
+`define GPIOC_PORTC     32'h20000028  // PORTC - Port C Data Register
+

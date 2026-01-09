@@ -15,7 +15,12 @@ module soc_top (
     // GPIO Port D
     input  wire [7:0]  gpio_pin_in_d,
     output wire [7:0]  gpio_pin_out_d,
-    output wire [7:0]  gpio_pin_dir_d
+    output wire [7:0]  gpio_pin_dir_d,
+
+    // GPIO Port C
+    input  wire [7:0]  gpio_pin_in_c,
+    output wire [7:0]  gpio_pin_out_c,
+    output wire [7:0]  gpio_pin_dir_c
 );
 
     // CPU memory interface
@@ -173,7 +178,10 @@ module soc_top (
         .gpio_pin_dir_b(gpio_pin_dir_b),
         .gpio_pin_in_d(gpio_pin_in_d),
         .gpio_pin_out_d(gpio_pin_out_d),
-        .gpio_pin_dir_d(gpio_pin_dir_d)
+        .gpio_pin_dir_d(gpio_pin_dir_d),
+        .gpio_pin_in_c(gpio_pin_in_c),
+        .gpio_pin_out_c(gpio_pin_out_c),
+        .gpio_pin_dir_c(gpio_pin_dir_c)
     );
 
 endmodule
