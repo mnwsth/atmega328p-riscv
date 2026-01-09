@@ -21,3 +21,8 @@
 `define GPIOB_DDRB      32'h20000024  // DDRB - Port B Data Direction Register
 `define GPIOB_PORTB     32'h20000025  // PORTB - Port B Data Register
 
+// GPIO Port D Registers (matching ATmega328P addresses)
+`define GPIOD_PIND      32'h20000029  // PIND - Port D Input Pins
+`define GPIOD_DDRD      32'h2000002A  // DDRD - Port D Data Direction Register
+`define GPIOD_PORTD     32'h2000002B  // PORTD - Port D Data Register
+

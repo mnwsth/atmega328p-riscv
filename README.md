@@ -27,9 +27,12 @@ This project implements a RISC-V based System-on-Chip (SoC) that replicates the 
 - **0x00000000 - 0x0000FFFF**: Program ROM (64KB)
 - **0x10000000 - 0x10000FFF**: Data RAM (4KB)
 - **0x20000000 - 0x20000FFF**: I/O Space (Peripherals)
-  - **0x20000023**: PINB (GPIO Port B Input)
-  - **0x20000024**: DDRB (GPIO Port B Data Direction)
-  - **0x20000025**: PORTB (GPIO Port B Output)
+- **0x20000023**: PINB (GPIO Port B Input)
+- **0x20000024**: DDRB (GPIO Port B Data Direction)
+- **0x20000025**: PORTB (GPIO Port B Output)
+- **0x20000029**: PIND (GPIO Port D Input)
+- **0x2000002A**: DDRD (GPIO Port D Data Direction)
+- **0x2000002B**: PORTD (GPIO Port D Output)
 
 ## Building the Firmware
 
@@ -121,14 +124,14 @@ make bitstream
 
 - ✅ RISC-V core integration (PicoRV32)
 - ✅ Memory system (ROM and RAM)
-- ✅ GPIO peripheral (Port B)
+- ✅ GPIO peripheral (Port B and Port D)
 - ✅ Bus decoder
 - ✅ Simple blinky firmware
 - ⏳ Full ATmega328P peripheral set (in progress)
 
 ## Next Steps
 
-- Add more GPIO ports (Port C, Port D)
+- Add more GPIO ports (Port C)
 - Implement timers
 - Add UART support
 - Implement ADC

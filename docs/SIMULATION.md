@@ -34,11 +34,13 @@ Once completed, the simulation will tell you:
 - ✅ Stack pointer is initialized correctly
 
 ### 2. **GPIO Peripheral**
-- ✅ GPIO registers are accessible at correct addresses (0x20000023-0x20000025)
-- ✅ DDRB register can be written (configures pin direction)
-- ✅ PORTB register can be written (drives output pins)
-- ✅ PINB register reflects pin state (for inputs)
-- ✅ GPIO pins change state when PORTB is written
+- ✅ GPIO Port B registers are accessible at correct addresses (0x20000023-0x20000025)
+- ✅ GPIO Port D registers are accessible at correct addresses (0x20000029-0x2000002B)
+- ✅ DDRB/DDRD registers can be written (configures pin direction)
+- ✅ PORTB/PORTD registers can be written (drives output pins)
+- ✅ PINB/PIND registers reflect pin state (for inputs)
+- ✅ GPIO pins change state when PORTB/PORTD are written
+- ✅ Port B and Port D operate independently
 
 ### 3. **Memory System**
 - ✅ Program ROM responds to instruction fetches
@@ -68,17 +70,18 @@ Simulation complete. GPIO toggled 10 times.
 ```
 
 This confirms:
-- GPIO pin 0 (PB0) is configured as output (GPIO_DIR = 0x1)
+- GPIO pin 0 (PB0) is configured as output (GPIO_DIR_B = 0x1)
 - PORTB bit 0 toggles between 0 and 1
 - The blinky program is running correctly
+- Port D is available for use (though not used by blinky program)
 
 ### 6. **Waveform Analysis**
 
 The generated `tb_soc.vcd` file can be viewed in a waveform viewer to see:
 - Clock and reset signals
 - CPU memory bus transactions
-- GPIO register writes (DDRB, PORTB)
-- GPIO pin output changes
+- GPIO register writes (DDRB, PORTB, DDRD, PORTD)
+- GPIO pin output changes (Port B and Port D)
 - Memory read/write operations
 - Instruction fetch cycles
 
@@ -125,7 +128,8 @@ To see toggles in reasonable time:
 - Check that program counter is incrementing
 
 **GPIO_DIR stays at 0:**
-- DDRB register write may have failed
+- DDRB/DDRD register write may have failed
 - Check bus decoder routes I/O addresses correctly
 - Verify GPIO module receives write transactions
+- Ensure correct port signals are being monitored (gpio_pin_dir_b vs gpio_pin_dir_d)
 

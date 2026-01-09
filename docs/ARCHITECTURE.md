@@ -22,7 +22,7 @@ This project implements a RISC-V based System-on-Chip (SoC) that replicates the 
 │       │          │          │                          │
 │  ┌────▼──┐  ┌───▼───┐  ┌───▼────┐                     │
 │  │  ROM  │  │  RAM  │  │  GPIO  │                     │
-│  │ 64KB  │  │  4KB  │  │ Port B │                     │
+│  │ 64KB  │  │  4KB  │  │Port B&D│                     │
 │  └───────┘  └───────┘  └─────────┘                     │
 └─────────────────────────────────────────────────────────┘
 ```
@@ -35,13 +35,23 @@ This project implements a RISC-V based System-on-Chip (SoC) that replicates the 
 | 0x10000000-0x10000FFF| 4KB   | Data RAM (SRAM equivalent)      |
 | 0x20000000-0x20000FFF| 4KB   | I/O Space (Peripherals)         |
 
-### I/O Register Map (Port B)
+### I/O Register Map
+
+#### Port B Registers
 
 | Address    | Register | Description                          |
 |------------|----------|--------------------------------------|
 | 0x20000023 | PINB     | Port B Input Pins (read-only)        |
 | 0x20000024 | DDRB     | Port B Data Direction Register        |
 | 0x20000025 | PORTB    | Port B Data Register                  |
+
+#### Port D Registers
+
+| Address    | Register | Description                          |
+|------------|----------|--------------------------------------|
+| 0x20000029 | PIND     | Port D Input Pins (read-only)        |
+| 0x2000002A | DDRD     | Port D Data Direction Register        |
+| 0x2000002B | PORTD    | Port D Data Register                  |
 
 ## Components
 
@@ -79,14 +89,16 @@ This project implements a RISC-V based System-on-Chip (SoC) that replicates the 
   - Read-after-write capability
   - Synchronous read/write
 
-### 5. GPIO Peripheral (Port B)
+### 5. GPIO Peripheral (Port B and Port D)
 
-- **Registers**: PINB, DDRB, PORTB (matching ATmega328P)
+- **Port B Registers**: PINB, DDRB, PORTB (matching ATmega328P)
+- **Port D Registers**: PIND, DDRD, PORTD (matching ATmega328P)
 - **Functionality**:
-  - 8-bit bidirectional I/O port
+  - 8-bit bidirectional I/O ports (16 total pins)
   - Configurable direction per pin
-  - Read actual pin state (PINB)
-  - Drive output pins (PORTB)
+  - Read actual pin state (PINB, PIND)
+  - Drive output pins (PORTB, PORTD)
+  - Independent operation of Port B and Port D
 
 ## Bus Protocol
 
@@ -108,16 +120,25 @@ The system uses a simple memory-mapped bus protocol:
 
 ## GPIO Pin Behavior
 
+### Port B
 - **DDRB = 0**: Pin configured as input
-  - `gpio_pin_out` is driven but pin is high-impedance
+  - `gpio_pin_out_b` is driven but pin is high-impedance
   - Reading `PINB` returns actual pin state
 - **DDRB = 1**: Pin configured as output
-  - `gpio_pin_out` drives the physical pin
+  - `gpio_pin_out_b` drives the physical pin
   - Reading `PINB` may return driven value (implementation dependent)
+
+### Port D
+- **DDRD = 0**: Pin configured as input
+  - `gpio_pin_out_d` is driven but pin is high-impedance
+  - Reading `PIND` returns actual pin state
+- **DDRD = 1**: Pin configured as output
+  - `gpio_pin_out_d` drives the physical pin
+  - Reading `PIND` may return driven value (implementation dependent)
 
 ## Future Enhancements
 
-- Additional GPIO ports (Port C, Port D)
+- Additional GPIO ports (Port C)
 - Timer/Counter peripherals
 - UART (Serial communication)
 - SPI interface

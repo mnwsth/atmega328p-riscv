@@ -8,9 +8,14 @@ module soc_top (
     input  wire        rst_n,
     
     // GPIO Port B
-    input  wire [7:0]  gpio_pin_in,
-    output wire [7:0]  gpio_pin_out,
-    output wire [7:0]  gpio_pin_dir
+    input  wire [7:0]  gpio_pin_in_b,
+    output wire [7:0]  gpio_pin_out_b,
+    output wire [7:0]  gpio_pin_dir_b,
+    
+    // GPIO Port D
+    input  wire [7:0]  gpio_pin_in_d,
+    output wire [7:0]  gpio_pin_out_d,
+    output wire [7:0]  gpio_pin_dir_d
 );
 
     // CPU memory interface
@@ -163,9 +168,12 @@ module soc_top (
         .mem_wstrb(gpio_mem_wstrb),
         .mem_rdata(gpio_mem_rdata),
         .mem_ready(gpio_mem_ready),
-        .gpio_pin_in(gpio_pin_in),
-        .gpio_pin_out(gpio_pin_out),
-        .gpio_pin_dir(gpio_pin_dir)
+        .gpio_pin_in_b(gpio_pin_in_b),
+        .gpio_pin_out_b(gpio_pin_out_b),
+        .gpio_pin_dir_b(gpio_pin_dir_b),
+        .gpio_pin_in_d(gpio_pin_in_d),
+        .gpio_pin_out_d(gpio_pin_out_d),
+        .gpio_pin_dir_d(gpio_pin_dir_d)
     );
 
 endmodule

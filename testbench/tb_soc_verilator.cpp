@@ -23,7 +23,8 @@ int main(int argc, char** argv) {
     // Initialize
     top->clk = 0;
     top->rst_n = 0;
-    top->gpio_pin_in = 0;
+    top->gpio_pin_in_b = 0;
+    top->gpio_pin_in_d = 0;
     
     // Reset
     for (int i = 0; i < 20; i++) {
@@ -35,10 +36,16 @@ int main(int argc, char** argv) {
     top->rst_n = 1;
     std::cout << "Reset released at time " << main_time << std::endl;
     
-    // Monitor GPIO
-    vluint8_t prev_gpio_out = 0;
-    vluint8_t prev_gpio_dir = 0;
-    int toggle_count = 0;
+    // Monitor GPIO Port B
+    vluint8_t prev_gpio_out_b = 0;
+    vluint8_t prev_gpio_dir_b = 0;
+    int toggle_count_b = 0;
+    
+    // Monitor GPIO Port D
+    vluint8_t prev_gpio_out_d = 0;
+    vluint8_t prev_gpio_dir_d = 0;
+    int toggle_count_d = 0;
+    
     int sample_count = 0;
     
     // Run simulation - enough cycles to see multiple toggles
@@ -54,25 +61,40 @@ int main(int argc, char** argv) {
             sample_count++;
             if (sample_count <= 10) {
                 std::cout << "Sample at cycle " << (main_time/2) 
-                          << ": GPIO_PORTB=0x" << std::hex << (int)top->gpio_pin_out
-                          << ", GPIO_DIR=0x" << (int)top->gpio_pin_dir << std::dec << std::endl;
+                          << ": GPIO_PORTB=0x" << std::hex << (int)top->gpio_pin_out_b
+                          << ", GPIO_DIR_B=0x" << (int)top->gpio_pin_dir_b
+                          << ", GPIO_PORTD=0x" << (int)top->gpio_pin_out_d
+                          << ", GPIO_DIR_D=0x" << (int)top->gpio_pin_dir_d << std::dec << std::endl;
             }
         }
         
-        // Monitor GPIO changes
-        if (top->gpio_pin_out != prev_gpio_out || top->gpio_pin_dir != prev_gpio_dir) {
+        // Monitor GPIO Port B changes
+        if (top->gpio_pin_out_b != prev_gpio_out_b || top->gpio_pin_dir_b != prev_gpio_dir_b) {
             std::cout << "Time " << main_time << " (cycle " << (main_time/2) << "): GPIO_PORTB = 0x" 
-                      << std::hex << (int)top->gpio_pin_out 
-                      << ", GPIO_DIR = 0x" << (int)top->gpio_pin_dir 
+                      << std::hex << (int)top->gpio_pin_out_b 
+                      << ", GPIO_DIR_B = 0x" << (int)top->gpio_pin_dir_b 
                       << std::dec << std::endl;
-            prev_gpio_out = top->gpio_pin_out;
-            prev_gpio_dir = top->gpio_pin_dir;
-            toggle_count++;
-            if (toggle_count >= 10) break; // Stop after 10 toggles
+            prev_gpio_out_b = top->gpio_pin_out_b;
+            prev_gpio_dir_b = top->gpio_pin_dir_b;
+            toggle_count_b++;
         }
+        
+        // Monitor GPIO Port D changes
+        if (top->gpio_pin_out_d != prev_gpio_out_d || top->gpio_pin_dir_d != prev_gpio_dir_d) {
+            std::cout << "Time " << main_time << " (cycle " << (main_time/2) << "): GPIO_PORTD = 0x" 
+                      << std::hex << (int)top->gpio_pin_out_d 
+                      << ", GPIO_DIR_D = 0x" << (int)top->gpio_pin_dir_d 
+                      << std::dec << std::endl;
+            prev_gpio_out_d = top->gpio_pin_out_d;
+            prev_gpio_dir_d = top->gpio_pin_dir_d;
+            toggle_count_d++;
+        }
+        
+        if (toggle_count_b >= 10 && toggle_count_d >= 0) break; // Stop after 10 Port B toggles
     }
     
-    std::cout << "Simulation complete. GPIO toggled " << toggle_count << " times." << std::endl;
+    std::cout << "Simulation complete. GPIO Port B toggled " << toggle_count_b << " times." << std::endl;
+    std::cout << "GPIO Port D toggled " << toggle_count_d << " times." << std::endl;
     
     tfp->close();
     delete top;

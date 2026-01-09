@@ -71,8 +71,8 @@ make view
 
 This opens NovyWave (on macOS) or GTKWave (on Linux) where you can see:
 - Clock and reset signals
-- GPIO port B output (`gpio_pin_out`)
-- GPIO direction register (`gpio_pin_dir`)
+- GPIO port B output (`gpio_pin_out_b`) and direction (`gpio_pin_dir_b`)
+- GPIO port D output (`gpio_pin_out_d`) and direction (`gpio_pin_dir_d`)
 
 ### Loading Waveforms in NovyWave (macOS)
 
@@ -112,7 +112,7 @@ On macOS, `make view` automatically copies the VCD file to `/tmp/vcs_files/` for
 ## What's Next?
 
 - Modify `software/firmware/blinky.c` to change the blink pattern
-- Add more GPIO ports (Port C, Port D)
+- Add more GPIO ports (Port C)
 - Implement additional peripherals (UART, timers)
 - See `BUILD.md` for detailed instructions
 

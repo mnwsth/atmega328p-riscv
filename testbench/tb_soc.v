@@ -9,18 +9,26 @@ module tb_soc;
     reg clk;
     reg rst_n;
     
-    // GPIO signals
-    reg [7:0] gpio_pin_in;
-    wire [7:0] gpio_pin_out;
-    wire [7:0] gpio_pin_dir;
+    // GPIO Port B signals
+    reg [7:0] gpio_pin_in_b;
+    wire [7:0] gpio_pin_out_b;
+    wire [7:0] gpio_pin_dir_b;
+    
+    // GPIO Port D signals
+    reg [7:0] gpio_pin_in_d;
+    wire [7:0] gpio_pin_out_d;
+    wire [7:0] gpio_pin_dir_d;
     
     // Instantiate DUT
     soc_top dut (
         .clk(clk),
         .rst_n(rst_n),
-        .gpio_pin_in(gpio_pin_in),
-        .gpio_pin_out(gpio_pin_out),
-        .gpio_pin_dir(gpio_pin_dir)
+        .gpio_pin_in_b(gpio_pin_in_b),
+        .gpio_pin_out_b(gpio_pin_out_b),
+        .gpio_pin_dir_b(gpio_pin_dir_b),
+        .gpio_pin_in_d(gpio_pin_in_d),
+        .gpio_pin_out_d(gpio_pin_out_d),
+        .gpio_pin_dir_d(gpio_pin_dir_d)
     );
     
     // Clock generation (10MHz = 100ns period)
@@ -32,22 +40,37 @@ module tb_soc;
     // Reset generation
     initial begin
         rst_n = 0;
-        gpio_pin_in = 8'h00;
+        gpio_pin_in_b = 8'h00;
+        gpio_pin_in_d = 8'h00;
         #1000;  // Hold reset for 1us
         rst_n = 1;
         $display("Reset released at time %0t", $time);
     end
     
-    // Monitor GPIO output
-    reg [7:0] prev_gpio_out;
+    // Monitor GPIO Port B output
+    reg [7:0] prev_gpio_out_b;
     initial begin
-        prev_gpio_out = 8'h00;
+        prev_gpio_out_b = 8'h00;
         forever begin
             @(posedge clk);
-            if (gpio_pin_out != prev_gpio_out) begin
-                $display("Time %0t: GPIO_PORTB = 0x%02x, GPIO_DIR = 0x%02x", 
-                         $time, gpio_pin_out, gpio_pin_dir);
-                prev_gpio_out = gpio_pin_out;
+            if (gpio_pin_out_b != prev_gpio_out_b) begin
+                $display("Time %0t: GPIO_PORTB = 0x%02x, GPIO_DIR_B = 0x%02x", 
+                         $time, gpio_pin_out_b, gpio_pin_dir_b);
+                prev_gpio_out_b = gpio_pin_out_b;
+            end
+        end
+    end
+    
+    // Monitor GPIO Port D output
+    reg [7:0] prev_gpio_out_d;
+    initial begin
+        prev_gpio_out_d = 8'h00;
+        forever begin
+            @(posedge clk);
+            if (gpio_pin_out_d != prev_gpio_out_d) begin
+                $display("Time %0t: GPIO_PORTD = 0x%02x, GPIO_DIR_D = 0x%02x", 
+                         $time, gpio_pin_out_d, gpio_pin_dir_d);
+                prev_gpio_out_d = gpio_pin_out_d;
             end
         end
     end
