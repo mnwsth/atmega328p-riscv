@@ -113,6 +113,15 @@ $(BIN): $(ELF)
 $(MEM): $(HEX)
 	python3 ../../software/tools/hex2mem.py $< $@
 
+# Input test build
+gpio_test_input: gpio_test_input.o start.o linker.ld
+	$(CC) $(LDFLAGS) -o $(ELF) gpio_test_input.o start.o
+	$(OBJDUMP) -d $(ELF) > $(DUMP)
+	$(OBJCOPY) -O ihex $(ELF) $(HEX)
+	$(OBJCOPY) -O binary $(ELF) $(BIN)
+	python3 ../../software/tools/hex2mem.py $(HEX) $(MEM)
+	$(SIZE) $(ELF)
+
 %.o: %.c
 	$(CC) $(CFLAGS) -c -o $@ $<
 
