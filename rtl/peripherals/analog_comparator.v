@@ -64,50 +64,31 @@ module analog_comparator (
     end
     
     // Interrupt Generation Logic
-    reg  aci_set;
+    wire interrupt_edge_detected;
     wire aci_clear;
 
-    // One-cycle interrupt set condition based on comparator output edges
-    always @(*) begin
-        aci_set = 1'b0;
-        
-        // Detect Interrupt Conditions (Set)
-        if (!acd) begin
-            case (acis)
-                2'b00: begin // Toggle
-                    if (ac_out_sync_2 != ac_out_prev)
-                        aci_set = 1'b1;
-                end
-                2'b01: begin // Reserved
-                    // No action
-                end
-                2'b10: begin // Falling Edge
-                    if (ac_out_prev && !ac_out_sync_2)
-                        aci_set = 1'b1;
-                end
-                2'b11: begin // Rising Edge
-                    if (!ac_out_prev && ac_out_sync_2)
-                        aci_set = 1'b1;
-                end
-            endcase
-        end
-    end
+    // Synchronous interrupt edge detection
+    assign interrupt_edge_detected = (!acd) && (
+        (acis == 2'b00 && ac_out_sync_2 != ac_out_prev) ||  // Toggle
+        (acis == 2'b10 && ac_out_prev && !ac_out_sync_2) ||  // Falling Edge
+        (acis == 2'b11 && !ac_out_prev && ac_out_sync_2)     // Rising Edge
+    );
 
-    // Write-1-to-clear condition from bus interface
+    // Clear condition (write-1-to-clear)
     assign aci_clear = mem_valid && |mem_wstrb &&
                        (mem_addr[7:0] == 8'h50) && mem_wdata[4];
-    
-    // Synchronous update of ACI with explicit set/clear priority
+
+    // Synchronous ACI update with clear taking precedence
     always @(posedge clk or negedge rst_n) begin
         if (!rst_n) begin
             aci <= 1'b0;
         end else begin
-            case ({aci_set, aci_clear})
-                2'b10: aci <= 1'b1;             // set only
-                2'b01: aci <= 1'b0;             // clear only
-                2'b11: aci <= 1'b1;             // both set and clear: keep/set interrupt
-                default: aci <= aci;            // no change
-            endcase
+            if (aci_clear) begin
+                aci <= 1'b0;  // Clear always takes precedence
+            end else if (interrupt_edge_detected) begin
+                aci <= 1'b1;  // Set only if not being cleared
+            end
+            // else: hold current value
         end
     end
     
