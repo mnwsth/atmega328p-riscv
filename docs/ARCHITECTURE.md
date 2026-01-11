@@ -119,6 +119,10 @@ This project implements a RISC-V based System-on-Chip (SoC) that replicates the 
   - Interrupt generation on Toggle, Rising Edge, or Falling Edge
   - Interrupt flag (ACI) and enable (ACIE) support
   - Disable capability (ACD) to save power
+- **Implementation Notes**:
+  - Race condition in interrupt logic has been fixed
+  - Clear operations take absolute precedence over interrupt detection
+  - Synchronous edge detection eliminates timing issues
 
 ## Bus Protocol
 

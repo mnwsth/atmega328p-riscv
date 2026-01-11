@@ -4,6 +4,22 @@
 
 The simulation duration depends on which testbench and firmware you use:
 
+### Available Testbenches
+
+**Main System Testbench (`tb_soc.v`):**
+- Tests the complete SoC with GPIO peripherals
+- Verifies CPU boot, memory access, and GPIO functionality
+- Supports both Verilator and Icarus Verilog
+
+**GPIO Testbenches:**
+- `tb_gpio_portc.v` - Dedicated test for GPIO Port C
+- `tb_gpio_portd.v` - Dedicated test for GPIO Port D
+- `tb_soc_input.v` - Tests GPIO input functionality
+
+**Analog Comparator Testbench:**
+- `tb_soc_ac.v` - Tests analog comparator peripheral
+- `peripherals/analog_comparator_tb.v` - Unit test for analog comparator logic
+
 ### Current Testbench Settings
 
 **Verilator Testbench:**
