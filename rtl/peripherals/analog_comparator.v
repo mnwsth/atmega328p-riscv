@@ -64,32 +64,44 @@ module analog_comparator (
     end
     
     // Interrupt Generation Logic
+    // Interrupt Generation Logic
+    reg aci_next;
+    
+    always @(*) begin
+        aci_next = aci;
+        
+        // 1. Detect Interrupt Conditions (Set)
+        if (!acd) begin
+            case (acis)
+                2'b00: begin // Toggle
+                    if (ac_out_sync_2 != ac_out_prev)
+                        aci_next = 1'b1;
+                end
+                2'b01: begin // Reserved
+                    // No action
+                end
+                2'b10: begin // Falling Edge
+                    if (ac_out_prev && !ac_out_sync_2)
+                        aci_next = 1'b1;
+                end
+                2'b11: begin // Rising Edge
+                    if (!ac_out_prev && ac_out_sync_2)
+                        aci_next = 1'b1;
+                end
+            endcase
+        end
+        
+        // 2. Clear Interrupt (Clear) - Takes precedence
+        if (mem_valid && |mem_wstrb && (mem_addr[7:0] == 8'h50) && mem_wdata[4]) begin
+            aci_next = 1'b0;
+        end
+    end
+    
     always @(posedge clk or negedge rst_n) begin
         if (!rst_n) begin
             aci <= 1'b0;
         end else begin
-            // Clear interrupt if 1 is written to ACI
-            if (mem_valid && |mem_wstrb && (mem_addr[7:0] == 8'h50) && mem_wdata[4]) begin
-                aci <= 1'b0;
-            end else if (!acd) begin
-                case (acis)
-                    2'b00: begin // Toggle
-                        if (ac_out_sync_2 != ac_out_prev)
-                            aci <= 1'b1;
-                    end
-                    2'b01: begin // Reserved
-                        // No action
-                    end
-                    2'b10: begin // Falling Edge
-                        if (ac_out_prev && !ac_out_sync_2)
-                            aci <= 1'b1;
-                    end
-                    2'b11: begin // Rising Edge
-                        if (!ac_out_prev && ac_out_sync_2)
-                            aci <= 1'b1;
-                    end
-                endcase
-            end
+            aci <= aci_next;
         end
     end
     
