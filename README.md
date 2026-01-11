@@ -33,6 +33,7 @@ This project implements a RISC-V based System-on-Chip (SoC) that replicates the 
 - **0x20000029**: PIND (GPIO Port D Input)
 - **0x2000002A**: DDRD (GPIO Port D Data Direction)
 - **0x2000002B**: PORTD (GPIO Port D Output)
+- **0x20000050**: ACSR (Analog Comparator Control/Status)
 
 ## Building the Firmware
 
@@ -124,14 +125,14 @@ make bitstream
 
 - ✅ RISC-V core integration (PicoRV32)
 - ✅ Memory system (ROM and RAM)
-- ✅ GPIO peripheral (Port B and Port D)
+- ✅ GPIO peripheral (Port B, Port C, and Port D)
+- ✅ Analog Comparator
 - ✅ Bus decoder
 - ✅ Simple blinky firmware
 - ⏳ Full ATmega328P peripheral set (in progress)
 
 ## Next Steps
 
-- Add more GPIO ports (Port C)
 - Implement timers
 - Add UART support
 - Implement ADC
