@@ -21,9 +21,9 @@ This project implements a RISC-V based System-on-Chip (SoC) that replicates the 
 │  └────┬──────────┬──────────┬───────────────┘         │
 │       │          │          │                          │
 │  ┌────▼──┐  ┌───▼───┐  ┌───▼────┐                     │
-│  │  ROM  │  │  RAM  │  │  GPIO  │                     │
-│  │ 64KB  │  │  4KB  │  │Port B,C,D│                     │
-│  └───────┘  └───────┘  └─────────┘                     │
+│  │  ROM  │  │  RAM  │  │  GPIO  │  │Analog Comp│                 │
+│  │ 64KB  │  │  4KB  │  │Port B,C,D│  │           │                 │
+│  └───────┘  └───────┘  └─────────┘  └───────────┘                 │
 └─────────────────────────────────────────────────────────┘
 ```
 
@@ -60,6 +60,7 @@ This project implements a RISC-V based System-on-Chip (SoC) that replicates the 
 | 0x20000029 | PIND     | Port D Input Pins (read-only)        |
 | 0x2000002A | DDRD     | Port D Data Direction Register        |
 | 0x2000002B | PORTD    | Port D Data Register                  |
+| 0x20000050 | ACSR     | Analog Comparator Control/Status      |
 
 ## Components
 
@@ -108,6 +109,20 @@ This project implements a RISC-V based System-on-Chip (SoC) that replicates the 
   - Read actual pin state (PINB, PINC, PIND)
   - Drive output pins (PORTB, PORTC, PORTD)
   - Independent operation of Port B, Port C, and Port D
+
+### 6. Analog Comparator
+
+- **Register**: ACSR (Analog Comparator Control and Status Register)
+- **Functionality**:
+  - Compares voltages on AIN0 and AIN1 pins
+  - Output (ACO) set when AIN0 > AIN1
+  - Interrupt generation on Toggle, Rising Edge, or Falling Edge
+  - Interrupt flag (ACI) and enable (ACIE) support
+  - Disable capability (ACD) to save power
+- **Implementation Notes**:
+  - Race condition in interrupt logic has been fixed
+  - Clear operations take absolute precedence over interrupt detection
+  - Synchronous edge detection eliminates timing issues
 
 ## Bus Protocol
 

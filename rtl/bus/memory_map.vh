@@ -31,3 +31,6 @@
 `define GPIOC_DDRC      32'h20000027  // DDRC - Port C Data Direction Register
 `define GPIOC_PORTC     32'h20000028  // PORTC - Port C Data Register
 
+// Analog Comparator Registers
+`define ACSR            32'h20000050  // ACSR - Analog Comparator Control and Status Register
+

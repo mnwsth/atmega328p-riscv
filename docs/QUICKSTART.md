@@ -112,7 +112,12 @@ On macOS, `make view` automatically copies the VCD file to `/tmp/vcs_files/` for
 ## What's Next?
 
 - Modify `software/firmware/blinky.c` to change the blinky pattern
-- Use GPIO Port C (Port C is now implemented!)
+- Try the blinky examples for different ports:
+  - `blinky_portb.c` - Uses GPIO Port B (default example)
+  - `blinky_portc.c` - Uses GPIO Port C
+  - `blinky_portd.c` - Uses GPIO Port D
+- Use `gpio_test_input.c` to test GPIO input functionality
+- Explore the Analog Comparator functionality
 - Implement additional peripherals (UART, timers)
 - See `BUILD.md` for detailed instructions
 
