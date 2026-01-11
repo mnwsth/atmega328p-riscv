@@ -37,11 +37,11 @@ The simulation duration depends on which testbench and firmware you use:
 
 ### Firmware Delay Impact
 
-The original `blinky.c` uses a delay of 1,000,000 × 100 = **100 million cycles** per toggle. This is:
+The original `blinky_portb.c` uses a long delay suitable for hardware. This is:
 - **Too long for simulation** - would require hours/days to see one toggle
 - **Appropriate for hardware** - creates visible LED blinking at typical clock speeds
 
-For simulation, use `blinky_sim.c` which uses a delay of only **1,000 cycles** per toggle.
+For simulation, use `blinky_portb_sim.c` (or `blinky_portc_sim.c`, `blinky_portd_sim.c`) which uses shorter delays suitable for simulation.
 
 ## What the Simulation Verifies
 
@@ -135,9 +135,9 @@ To see toggles in reasonable time:
 1. **Build simulation firmware:**
    ```bash
    cd software/firmware
-   # Edit Makefile to use blinky_sim.c instead of blinky.c
-   # Or manually: riscv64-unknown-elf-gcc ... blinky_sim.c ...
+   make sim
    ```
+   This builds using `blinky_portb_sim.c` with short delays suitable for simulation.
 
 2. **Run simulation:**
    ```bash

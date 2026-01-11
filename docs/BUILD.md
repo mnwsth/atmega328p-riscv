@@ -52,7 +52,7 @@ This document provides detailed instructions for building and testing the ATmega
    ```bash
    make sim
    ```
-   This builds with `blinky_sim.c` which uses shorter delays suitable for simulation.
+   This builds with `blinky_portb_sim.c` which uses shorter delays suitable for simulation.
 
 3. Check the size:
    ```bash

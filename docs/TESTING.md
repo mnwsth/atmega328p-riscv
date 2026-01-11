@@ -15,6 +15,8 @@ The project includes multiple testbenches to verify different aspects of the SoC
 | `tb_gpio_portd.v` | Unit Test | Icarus Verilog | GPIO Port D register tests |
 | `tb_soc_input.v` | Integration Test | Icarus Verilog | GPIO input functionality |
 | `tb_soc_ac.v` | Integration Test | Icarus Verilog | Analog Comparator integration |
+| `tb_bus_decoder.v` | Unit Test | Icarus Verilog | Bus decoder address routing |
+| `tb_ram.v` | Unit Test | Icarus Verilog | RAM read/write operations |
 | `peripherals/analog_comparator_tb.v` | Unit Test | Icarus Verilog | Analog Comparator peripheral |
 | `peripherals/timer0_tb.v` | Unit Test | Icarus Verilog | Timer0 peripheral (27 tests) |
 | `tb_soc_timer0.v` | Integration Test | Icarus Verilog | Timer0 SoC integration |
@@ -534,6 +536,8 @@ testbench/
 ├── tb_soc_input.v                # GPIO input integration test
 ├── tb_soc_ac.v                   # Analog Comparator integration test
 ├── tb_soc_timer0.v               # Timer0 integration test
+├── tb_bus_decoder.v              # Bus decoder unit tests
+├── tb_ram.v                      # RAM unit tests
 ├── peripherals/
 │   ├── analog_comparator_tb.v    # Analog Comparator unit test
 │   └── timer0_tb.v               # Timer0 unit test (27 tests)
