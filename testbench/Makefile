@@ -15,6 +15,7 @@ RTL_SOURCES = ../rtl/core/picorv32.v \
               ../rtl/memory/ram.v \
               ../rtl/peripherals/gpio.v \
               ../rtl/peripherals/analog_comparator.v \
+              ../rtl/peripherals/timer0.v \
               ../rtl/bus/bus_decoder.v \
               ../rtl/soc_top.v
 
@@ -27,7 +28,7 @@ VCD = tb_soc.vcd
 # Firmware
 FIRMWARE_MEM = firmware.mem
 
-.PHONY: all sim view clean firmware
+.PHONY: all sim view clean firmware timer0_unit timer0_sim
 
 all: firmware sim
 
@@ -64,7 +65,43 @@ else
 	$(VIEWER) $(VCD) &
 endif
 
+# Timer0 Unit Test (standalone peripheral test)
+timer0_unit:
+	$(SIMULATOR) -o timer0_tb.vvp -I../rtl ../rtl/peripherals/timer0.v peripherals/timer0_tb.v
+	vvp timer0_tb.vvp
+
+# Timer0 Unit Test with waveform viewing
+timer0_unit_view: timer0_unit
+ifeq ($(UNAME_S),Darwin)
+	@mkdir -p /tmp/vcs_files
+	@cp timer0_tb.vcd /tmp/vcs_files/
+	@open -a NovyWave &
+else
+	$(VIEWER) timer0_tb.vcd &
+endif
+
+# Timer0 Integration Test (full SoC with timer0_test firmware)
+timer0_sim: timer0_firmware
+	$(SIMULATOR) -o tb_soc_timer0.vvp -I../rtl $(RTL_SOURCES) tb_soc_timer0.v
+	vvp tb_soc_timer0.vvp
+
+# Timer0 test firmware
+timer0_firmware:
+	@echo "Building timer0 test firmware..."
+	cd ../software/firmware && make timer0_test
+	cp ../software/firmware/firmware.mem .
+
+# Timer0 Integration Test with waveform viewing
+timer0_sim_view: timer0_sim
+ifeq ($(UNAME_S),Darwin)
+	@mkdir -p /tmp/vcs_files
+	@cp tb_soc_timer0.vcd /tmp/vcs_files/
+	@open -a NovyWave &
+else
+	$(VIEWER) tb_soc_timer0.vcd &
+endif
+
 clean:
-	rm -f $(VVP) $(VCD) $(FIRMWARE_MEM)
+	rm -f $(VVP) $(VCD) $(FIRMWARE_MEM) timer0_tb.vvp timer0_tb.vcd tb_soc_timer0.vvp tb_soc_timer0.vcd
 	@echo "To clean VCD files in /tmp/vcs_files, run: rm -rf /tmp/vcs_files"
 

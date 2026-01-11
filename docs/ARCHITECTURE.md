@@ -7,24 +7,24 @@ This project implements a RISC-V based System-on-Chip (SoC) that replicates the 
 ## System Architecture
 
 ```
-┌─────────────────────────────────────────────────────────┐
-│                    SoC Top Level                         │
-│                                                          │
-│  ┌──────────┐                                           │
-│  │ PicoRV32 │                                           │
-│  │   Core   │                                           │
-│  └────┬─────┘                                           │
-│       │ Memory Bus                                      │
-│       │                                                 │
-│  ┌────▼──────────────────────────────────────┐         │
-│  │         Bus Decoder                        │         │
-│  └────┬──────────┬──────────┬───────────────┘         │
-│       │          │          │                          │
-│  ┌────▼──┐  ┌───▼───┐  ┌───▼────┐                     │
-│  │  ROM  │  │  RAM  │  │  GPIO  │  │Analog Comp│                 │
-│  │ 64KB  │  │  4KB  │  │Port B,C,D│  │           │                 │
-│  └───────┘  └───────┘  └─────────┘  └───────────┘                 │
-└─────────────────────────────────────────────────────────┘
+┌──────────────────────────────────────────────────────────────────┐
+│                         SoC Top Level                             │
+│                                                                   │
+│  ┌──────────┐                                                    │
+│  │ PicoRV32 │                                                    │
+│  │   Core   │                                                    │
+│  └────┬─────┘                                                    │
+│       │ Memory Bus                                               │
+│       │                                                          │
+│  ┌────▼─────────────────────────────────────────────────────┐   │
+│  │                    Bus Decoder                            │   │
+│  └────┬──────────┬──────────┬────────────┬────────────────┘   │
+│       │          │          │            │                      │
+│  ┌────▼──┐  ┌───▼───┐  ┌───▼────┐  ┌────▼─────┐  ┌─────────┐  │
+│  │  ROM  │  │  RAM  │  │  GPIO  │  │  Analog  │  │ Timer0  │  │
+│  │ 64KB  │  │  4KB  │  │B, C, D │  │Comparator│  │  8-bit  │  │
+│  └───────┘  └───────┘  └────────┘  └──────────┘  └─────────┘  │
+└──────────────────────────────────────────────────────────────────┘
 ```
 
 ## Memory Map
@@ -60,7 +60,24 @@ This project implements a RISC-V based System-on-Chip (SoC) that replicates the 
 | 0x20000029 | PIND     | Port D Input Pins (read-only)        |
 | 0x2000002A | DDRD     | Port D Data Direction Register        |
 | 0x2000002B | PORTD    | Port D Data Register                  |
+
+#### Analog Comparator Registers
+
+| Address    | Register | Description                          |
+|------------|----------|--------------------------------------|
 | 0x20000050 | ACSR     | Analog Comparator Control/Status      |
+
+#### Timer/Counter 0 Registers
+
+| Address    | Register | Description                          |
+|------------|----------|--------------------------------------|
+| 0x20000035 | TIFR0    | Timer Interrupt Flag Register         |
+| 0x20000044 | TCCR0A   | Timer Control Register A              |
+| 0x20000045 | TCCR0B   | Timer Control Register B              |
+| 0x20000046 | TCNT0    | Timer Counter Register                |
+| 0x20000047 | OCR0A    | Output Compare Register A             |
+| 0x20000048 | OCR0B    | Output Compare Register B             |
+| 0x2000006E | TIMSK0   | Timer Interrupt Mask Register         |
 
 ## Components
 
@@ -124,6 +141,34 @@ This project implements a RISC-V based System-on-Chip (SoC) that replicates the 
   - Clear operations take absolute precedence over interrupt detection
   - Synchronous edge detection eliminates timing issues
 
+### 7. Timer/Counter 0
+
+- **Registers**: TCCR0A, TCCR0B, TCNT0, OCR0A, OCR0B, TIMSK0, TIFR0
+- **Functionality**:
+  - 8-bit counter with multiple operating modes
+  - Prescaler options: 1, 8, 64, 256, 1024, external clock (T0 pin)
+  - Waveform Generation Modes:
+    - Normal mode (count 0x00 to 0xFF)
+    - CTC mode (Clear Timer on Compare Match)
+    - Fast PWM mode
+    - Phase Correct PWM mode
+  - Two Output Compare units (OC0A, OC0B) with configurable behavior:
+    - Toggle, Clear, or Set on compare match
+    - PWM output generation
+  - Interrupt sources:
+    - Timer Overflow (TOV0)
+    - Compare Match A (OCF0A)
+    - Compare Match B (OCF0B)
+  - Force Output Compare capability (FOC0A, FOC0B)
+- **External Pins**:
+  - T0: External clock input
+  - OC0A: Output Compare A output
+  - OC0B: Output Compare B output
+- **Implementation Notes**:
+  - Full ATmega328P register compatibility
+  - All prescaler modes implemented including external clock
+  - 27 comprehensive unit tests verify all functionality
+
 ## Bus Protocol
 
 The system uses PicoRV32's memory bus protocol with **word-aligned addressing**:
@@ -184,13 +229,15 @@ When accessing a byte-addressed register (e.g., PORTB at 0x25):
 
 ## Future Enhancements
 
-- Timer/Counter peripherals
+- Timer/Counter 1 (16-bit timer)
+- Timer/Counter 2 (8-bit timer with async mode)
 - UART (Serial communication)
 - SPI interface
 - I2C (TWI) interface
 - ADC (Analog-to-Digital Converter)
 - Interrupt controller
 - EEPROM emulation
+- Watchdog Timer
 
 ## Design Notes
 

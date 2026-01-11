@@ -16,6 +16,8 @@ The project includes multiple testbenches to verify different aspects of the SoC
 | `tb_soc_input.v` | Integration Test | Icarus Verilog | GPIO input functionality |
 | `tb_soc_ac.v` | Integration Test | Icarus Verilog | Analog Comparator integration |
 | `peripherals/analog_comparator_tb.v` | Unit Test | Icarus Verilog | Analog Comparator peripheral |
+| `peripherals/timer0_tb.v` | Unit Test | Icarus Verilog | Timer0 peripheral (27 tests) |
+| `tb_soc_timer0.v` | Integration Test | Icarus Verilog | Timer0 SoC integration |
 
 ---
 
@@ -372,6 +374,119 @@ All tests completed
 
 ---
 
+### 9. Timer0 Unit Test (`peripherals/timer0_tb.v`)
+
+**Location:** `testbench/peripherals/timer0_tb.v`
+
+**Purpose:** Comprehensive unit testing of the Timer/Counter 0 peripheral.
+
+**Test Cases (27 tests):**
+
+| Test # | Description | Verification |
+|--------|-------------|--------------|
+| 1 | Reset Values | All registers = 0x00 after reset |
+| 2 | Register Read/Write | TCCR0A, TCCR0B, TCNT0, OCR0A/B, TIMSK0 |
+| 3 | Timer Stopped (CS=000) | TCNT0 doesn't increment |
+| 4 | Normal Mode, Prescaler /1 | TCNT0 counts at clock rate |
+| 5 | Normal Mode Overflow | TOV0 flag and IRQ set at 0xFF→0x00 |
+| 6 | Prescaler /8 | TCNT0 counts at clk/8 |
+| 7 | Prescaler /64 | TCNT0 counts at clk/64 |
+| 8 | CTC Mode | Counter clears at OCR0A match |
+| 9 | Compare Match A Detection | OCF0A flag and IRQ set |
+| 10 | Compare Match B Detection | OCF0B flag and IRQ set |
+| 11 | OC0A Toggle Mode | OC0A toggles on compare match |
+| 12 | OC0A Clear Mode | OC0A clears on compare match |
+| 13 | OC0A Set Mode | OC0A sets on compare match |
+| 14 | Fast PWM Mode | TOV0 set at TOP |
+| 15 | Fast PWM with OCR0A as TOP | Counter wraps at OCR0A |
+| 16 | External Clock Falling Edge | TCNT0 increments on T0 falling edge |
+| 17 | External Clock Rising Edge | TCNT0 increments on T0 rising edge |
+| 18 | Interrupt Mask/Enable | IRQ only when TOIE0=1 |
+| 19 | Write TCNT0 While Running | Direct counter update works |
+| 20 | Force Output Compare | FOC0A toggles OC0A in non-PWM mode |
+| 21 | Multiple Flags Set | All flags can be set simultaneously |
+| 22 | OC0B Toggle Mode | OC0B toggles on compare match |
+| 23 | Phase Correct PWM Mode | TOV0 set at BOTTOM |
+| 24 | Prescaler /256 | TCNT0 counts at clk/256 |
+| 25 | Prescaler /1024 | TCNT0 counts at clk/1024 |
+| 26 | CTC Mode - TOV0 not set (OCR0A < 0xFF) | TOV0 remains cleared |
+| 27 | CTC Mode - TOV0 set (OCR0A = 0xFF) | TOV0 set when TOP=MAX |
+
+**Timer0 Register Bits:**
+
+**TCCR0A:**
+- Bits 7:6: COM0A (Compare Output Mode A)
+- Bits 5:4: COM0B (Compare Output Mode B)
+- Bits 1:0: WGM0[1:0] (Waveform Generation Mode)
+
+**TCCR0B:**
+- Bit 7: FOC0A (Force Output Compare A)
+- Bit 6: FOC0B (Force Output Compare B)
+- Bit 3: WGM02 (Waveform Generation Mode bit 2)
+- Bits 2:0: CS0 (Clock Select)
+
+**How to Run:**
+```bash
+cd testbench
+make timer0_unit
+```
+
+**Expected Output:**
+```
+=== Test 1: Reset Values ===
+PASS: TCCR0A reset = 00000000
+PASS: TCCR0B reset = 00000000
+...
+=== Test 25: Prescaler /1024 ===
+PASS: TCNT0 with /1024 = 10
+
+=== Test 26: CTC Mode - TOV0 not set (OCR0A < 0xFF) ===
+PASS: TOV0 not set in CTC mode (OCR0A < 0xFF)
+
+=== Test 27: CTC Mode - TOV0 set (OCR0A = 0xFF) ===
+PASS: TOV0 set in CTC mode (OCR0A = 0xFF)
+========================================
+Test Summary: 27 tests, 0 errors
+ALL TESTS PASSED!
+========================================
+```
+
+---
+
+### 10. Timer0 Integration Test (`tb_soc_timer0.v`)
+
+**Location:** `testbench/tb_soc_timer0.v`
+
+**Purpose:** Tests Timer0 integration with the full SoC using test firmware.
+
+**What it Tests:**
+- Timer0 register access from CPU
+- Timer counting with prescaler
+- Overflow detection
+- Compare match detection
+- CTC mode operation
+
+**Requirements:**
+- Requires `timer0_test.c` firmware compiled and loaded
+
+**How to Run:**
+```bash
+cd testbench
+make timer0_sim
+```
+
+**Expected Output:**
+```
+Timer0 Integration Test Started
+Time 1000: TEST 0 PASSED - Register access
+Time 2000: TEST 1 PASSED - Normal mode counting
+Time 3000: TEST 2 PASSED - Overflow detection
+...
+*** ALL TESTS PASSED! ***
+```
+
+---
+
 ## Viewing Waveforms
 
 All testbenches generate VCD (Value Change Dump) files for waveform viewing.
@@ -418,8 +533,10 @@ testbench/
 ├── tb_gpio_portd.v               # GPIO Port D unit tests
 ├── tb_soc_input.v                # GPIO input integration test
 ├── tb_soc_ac.v                   # Analog Comparator integration test
+├── tb_soc_timer0.v               # Timer0 integration test
 ├── peripherals/
-│   └── analog_comparator_tb.v    # Analog Comparator unit test
+│   ├── analog_comparator_tb.v    # Analog Comparator unit test
+│   └── timer0_tb.v               # Timer0 unit test (27 tests)
 └── obj_dir/                      # Verilator build output
 ```
 
@@ -440,7 +557,14 @@ Tests use the following memory-mapped register addresses:
 | 0x20000029 | PIND | Port D Input Pins |
 | 0x2000002A | DDRD | Port D Data Direction |
 | 0x2000002B | PORTD | Port D Data Register |
+| 0x20000035 | TIFR0 | Timer0 Interrupt Flag Register |
+| 0x20000044 | TCCR0A | Timer0 Control Register A |
+| 0x20000045 | TCCR0B | Timer0 Control Register B |
+| 0x20000046 | TCNT0 | Timer0 Counter Register |
+| 0x20000047 | OCR0A | Timer0 Output Compare A |
+| 0x20000048 | OCR0B | Timer0 Output Compare B |
 | 0x20000050 | ACSR | Analog Comparator Control/Status |
+| 0x2000006E | TIMSK0 | Timer0 Interrupt Mask Register |
 
 ---
 

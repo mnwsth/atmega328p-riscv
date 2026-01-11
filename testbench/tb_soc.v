@@ -28,6 +28,11 @@ module tb_soc;
     reg ain0;
     reg ain1;
     
+    // Timer0 signals
+    reg t0_pin;
+    wire oc0a;
+    wire oc0b;
+    
     // Instantiate DUT
     soc_top dut (
         .clk(clk),
@@ -42,7 +47,10 @@ module tb_soc;
         .gpio_pin_out_c(gpio_pin_out_c),
         .gpio_pin_dir_c(gpio_pin_dir_c),
         .ain0(ain0),
-        .ain1(ain1)
+        .ain1(ain1),
+        .t0_pin(t0_pin),
+        .oc0a(oc0a),
+        .oc0b(oc0b)
     );
     
     // Clock generation (10MHz = 100ns period)
@@ -59,6 +67,7 @@ module tb_soc;
         gpio_pin_in_c = 8'h00;
         ain0 = 0;
         ain1 = 0;
+        t0_pin = 0;
         #1000;  // Hold reset for 1us
         rst_n = 1;
         $display("Reset released at time %0t", $time);

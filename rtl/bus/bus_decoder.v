@@ -39,7 +39,15 @@ module bus_decoder (
     output reg  [31:0] ac_mem_wdata,
     output reg  [3:0]  ac_mem_wstrb,
     input  wire [31:0] ac_mem_rdata,
-    input  wire        ac_mem_ready
+    input  wire        ac_mem_ready,
+
+    // Timer0 interface
+    output reg         timer0_mem_valid,
+    output reg  [31:0] timer0_mem_addr,
+    output reg  [31:0] timer0_mem_wdata,
+    output reg  [3:0]  timer0_mem_wstrb,
+    input  wire [31:0] timer0_mem_rdata,
+    input  wire        timer0_mem_ready
 );
 
     // Address decoding
@@ -49,8 +57,18 @@ module bus_decoder (
     
     // Peripheral selection within IO space
     wire ac_sel = (cpu_mem_addr == `ACSR);
-    // GPIO is default for other IO addresses for now, or we can be more specific
-    wire gpio_sel = io_sel && !ac_sel;
+    
+    // Timer0 register selection
+    wire timer0_sel = (cpu_mem_addr == `TIMER0_TIFR0)  ||
+                      (cpu_mem_addr == `TIMER0_TCCR0A) ||
+                      (cpu_mem_addr == `TIMER0_TCCR0B) ||
+                      (cpu_mem_addr == `TIMER0_TCNT0)  ||
+                      (cpu_mem_addr == `TIMER0_OCR0A)  ||
+                      (cpu_mem_addr == `TIMER0_OCR0B)  ||
+                      (cpu_mem_addr == `TIMER0_TIMSK0);
+    
+    // GPIO is default for other IO addresses
+    wire gpio_sel = io_sel && !ac_sel && !timer0_sel;
     
     // Address calculation (convert byte address to word address)
     wire [15:0] rom_word_addr = cpu_mem_addr[15:2];  // 64KB = 16K words (bits 15:2)
@@ -109,6 +127,21 @@ module bus_decoder (
             ac_mem_wstrb = cpu_mem_wstrb;
         end
     end
+
+    // Timer0 interface
+    always @(*) begin
+        timer0_mem_valid = 1'b0;
+        timer0_mem_addr = 32'h00000000;
+        timer0_mem_wdata = 32'h00000000;
+        timer0_mem_wstrb = 4'h0;
+        
+        if (cpu_mem_valid && timer0_sel) begin
+            timer0_mem_valid = 1'b1;
+            timer0_mem_addr = cpu_mem_addr;
+            timer0_mem_wdata = cpu_mem_wdata;
+            timer0_mem_wstrb = cpu_mem_wstrb;
+        end
+    end
     
     // Read data mux
     always @(*) begin
@@ -127,6 +160,9 @@ module bus_decoder (
         end else if (ac_sel) begin
             cpu_mem_rdata = ac_mem_rdata;
             cpu_mem_ready = ac_mem_ready;
+        end else if (timer0_sel) begin
+            cpu_mem_rdata = timer0_mem_rdata;
+            cpu_mem_ready = timer0_mem_ready;
         end
     end
 
