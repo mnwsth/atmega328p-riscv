@@ -119,7 +119,7 @@ On macOS, `make view` automatically copies the VCD file to `/tmp/vcs_files/` for
 - Use `gpio_test_input.c` to test GPIO input functionality
 - Explore the Analog Comparator functionality
 - Try Timer0 functionality:
-  - Run `make timer0_unit` in testbench/ to run 25 Timer0 unit tests
+  - Run `make timer0_unit` in testbench/ to run 27 Timer0 unit tests
   - Use `timer0_test.c` firmware for integration testing
   - Timer0 supports prescalers, PWM, compare match, and interrupts
 - Implement additional peripherals (Timer1, Timer2, UART)
