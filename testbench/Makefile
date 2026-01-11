@@ -16,6 +16,7 @@ RTL_SOURCES = ../rtl/core/picorv32.v \
               ../rtl/peripherals/gpio.v \
               ../rtl/peripherals/analog_comparator.v \
               ../rtl/peripherals/timer0.v \
+              ../rtl/peripherals/watchdog_timer.v \
               ../rtl/bus/bus_decoder.v \
               ../rtl/soc_top.v
 
@@ -28,7 +29,7 @@ VCD = tb_soc.vcd
 # Firmware
 FIRMWARE_MEM = firmware.mem
 
-.PHONY: all sim view clean firmware timer0_unit timer0_sim
+.PHONY: all sim view clean firmware timer0_unit timer0_sim wdt_unit wdt_sim
 
 all: firmware sim
 
@@ -101,7 +102,43 @@ else
 	$(VIEWER) tb_soc_timer0.vcd &
 endif
 
+# Watchdog Timer Unit Test (standalone peripheral test)
+wdt_unit:
+	$(SIMULATOR) -o watchdog_timer_tb.vvp -I../rtl ../rtl/peripherals/watchdog_timer.v peripherals/watchdog_timer_tb.v
+	vvp watchdog_timer_tb.vvp
+
+# Watchdog Timer Unit Test with waveform viewing
+wdt_unit_view: wdt_unit
+ifeq ($(UNAME_S),Darwin)
+	@mkdir -p /tmp/vcs_files
+	@cp watchdog_timer_tb.vcd /tmp/vcs_files/
+	@open -a NovyWave &
+else
+	$(VIEWER) watchdog_timer_tb.vcd &
+endif
+
+# Watchdog Timer Integration Test (full SoC with wdt_test firmware)
+wdt_sim: wdt_firmware
+	$(SIMULATOR) -o tb_soc_wdt.vvp -I../rtl $(RTL_SOURCES) tb_soc_wdt.v
+	vvp tb_soc_wdt.vvp
+
+# Watchdog Timer test firmware
+wdt_firmware:
+	@echo "Building WDT test firmware..."
+	cd ../software/firmware && make wdt_test
+	cp ../software/firmware/firmware.mem .
+
+# Watchdog Timer Integration Test with waveform viewing
+wdt_sim_view: wdt_sim
+ifeq ($(UNAME_S),Darwin)
+	@mkdir -p /tmp/vcs_files
+	@cp tb_soc_wdt.vcd /tmp/vcs_files/
+	@open -a NovyWave &
+else
+	$(VIEWER) tb_soc_wdt.vcd &
+endif
+
 clean:
-	rm -f $(VVP) $(VCD) $(FIRMWARE_MEM) timer0_tb.vvp timer0_tb.vcd tb_soc_timer0.vvp tb_soc_timer0.vcd
+	rm -f $(VVP) $(VCD) $(FIRMWARE_MEM) timer0_tb.vvp timer0_tb.vcd tb_soc_timer0.vvp tb_soc_timer0.vcd watchdog_timer_tb.vvp watchdog_timer_tb.vcd tb_soc_wdt.vvp tb_soc_wdt.vcd
 	@echo "To clean VCD files in /tmp/vcs_files, run: rm -rf /tmp/vcs_files"
 

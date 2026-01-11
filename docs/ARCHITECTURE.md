@@ -24,6 +24,11 @@ This project implements a RISC-V based System-on-Chip (SoC) that replicates the 
 │  │  ROM  │  │  RAM  │  │  GPIO  │  │  Analog  │  │ Timer0  │  │
 │  │ 64KB  │  │  4KB  │  │B, C, D │  │Comparator│  │  8-bit  │  │
 │  └───────┘  └───────┘  └────────┘  └──────────┘  └─────────┘  │
+│                                                                │
+│                                    ┌──────────┐                │
+│                                    │ Watchdog │                │
+│                                    │  Timer   │                │
+│                                    └──────────┘                │
 └──────────────────────────────────────────────────────────────────┘
 ```
 
@@ -78,6 +83,14 @@ This project implements a RISC-V based System-on-Chip (SoC) that replicates the 
 | 0x20000047 | OCR0A    | Output Compare Register A             |
 | 0x20000048 | OCR0B    | Output Compare Register B             |
 | 0x2000006E | TIMSK0   | Timer Interrupt Mask Register         |
+
+#### Watchdog Timer Registers
+
+| Address    | Register | Description                          |
+|------------|----------|--------------------------------------|
+| 0x20000054 | MCUSR    | MCU Status Register (WDRF bit)        |
+| 0x20000060 | WDTCSR   | Watchdog Timer Control and Status     |
+| 0x20000061 | WDR      | Watchdog Reset (write 0xA5 to reset)  |
 
 ## Components
 
@@ -169,6 +182,44 @@ This project implements a RISC-V based System-on-Chip (SoC) that replicates the 
   - All prescaler modes implemented including external clock
   - 27 comprehensive unit tests verify all functionality
 
+### 8. Watchdog Timer
+
+- **Registers**: MCUSR (WDRF bit), WDTCSR (WDIF, WDIE, WDP3, WDCE, WDE, WDP[2:0])
+- **Functionality**:
+  - Separate 128kHz oscillator simulation (128 system clock divider)
+  - 8 programmable timeout periods (16ms to 8s equivalent)
+  - Three operating modes:
+    - Interrupt only mode (WDIE=1, WDE=0)
+    - System Reset mode (WDIE=0, WDE=1)
+    - Interrupt and System Reset mode (WDIE=1, WDE=1)
+  - WDR (Watchdog Reset) command via magic value 0xA5
+  - Timed sequence for safe WDE/WDP bit changes (32 cycle window)
+  - WDCE (Watchdog Change Enable) auto-clear
+  - WDRF (Watchdog Reset Flag) in MCUSR
+- **WDTCSR Register Bits**:
+  - Bit 7: WDIF (Watchdog Interrupt Flag, write-1-to-clear)
+  - Bit 6: WDIE (Watchdog Interrupt Enable)
+  - Bit 5: WDP3 (Watchdog Prescaler bit 3)
+  - Bit 4: WDCE (Watchdog Change Enable)
+  - Bit 3: WDE (Watchdog Enable)
+  - Bits 2:0: WDP[2:0] (Watchdog Prescaler bits)
+- **Timeout Periods** (WDP[3:0]):
+  - 0000: 2K cycles (~16ms at 128kHz)
+  - 0001: 4K cycles (~32ms)
+  - 0010: 8K cycles (~64ms)
+  - 0011: 16K cycles (~125ms)
+  - 0100: 32K cycles (~250ms)
+  - 0101: 64K cycles (~500ms)
+  - 0110: 128K cycles (~1s)
+  - 0111: 256K cycles (~2s)
+  - 1000: 512K cycles (~4s)
+  - 1001: 1M cycles (~8s)
+- **Implementation Notes**:
+  - 21-bit counter and timeout registers to support full 2^20 cycle timeout (WDP=1001)
+  - 26 comprehensive unit tests verify all functionality
+  - Full integration test with C firmware
+  - Timed sequence window extended to 32 cycles for RISC-V compatibility
+
 ## Bus Protocol
 
 The system uses PicoRV32's memory bus protocol with **word-aligned addressing**:
@@ -237,7 +288,6 @@ When accessing a byte-addressed register (e.g., PORTB at 0x25):
 - ADC (Analog-to-Digital Converter)
 - Interrupt controller
 - EEPROM emulation
-- Watchdog Timer
 
 ## Design Notes
 

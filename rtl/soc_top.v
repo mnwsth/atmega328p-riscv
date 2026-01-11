@@ -31,7 +31,10 @@ module soc_top (
     
     // Timer0 output compare pins
     output wire        oc0a,
-    output wire        oc0b
+    output wire        oc0b,
+    
+    // Watchdog Timer reset request output
+    output wire        wdt_reset_req
 );
 
     // CPU memory interface
@@ -80,6 +83,15 @@ module soc_top (
     wire        timer0_irq_ovf;
     wire        timer0_irq_compa;
     wire        timer0_irq_compb;
+
+    wire        wdt_mem_valid;
+    wire [31:0] wdt_mem_addr;
+    wire [31:0] wdt_mem_wdata;
+    wire [3:0]  wdt_mem_wstrb;
+    wire [31:0] wdt_mem_rdata;
+    wire        wdt_mem_ready;
+    wire        wdt_irq;
+    wire        wdt_reset_req_internal;
     
     // Instantiate RISC-V core
     picorv32 #(
@@ -171,7 +183,13 @@ module soc_top (
         .timer0_mem_wdata(timer0_mem_wdata),
         .timer0_mem_wstrb(timer0_mem_wstrb),
         .timer0_mem_rdata(timer0_mem_rdata),
-        .timer0_mem_ready(timer0_mem_ready)
+        .timer0_mem_ready(timer0_mem_ready),
+        .wdt_mem_valid(wdt_mem_valid),
+        .wdt_mem_addr(wdt_mem_addr),
+        .wdt_mem_wdata(wdt_mem_wdata),
+        .wdt_mem_wstrb(wdt_mem_wstrb),
+        .wdt_mem_rdata(wdt_mem_rdata),
+        .wdt_mem_ready(wdt_mem_ready)
     );
     
     // Instantiate ROM
@@ -257,5 +275,22 @@ module soc_top (
         .irq_compa(timer0_irq_compa),
         .irq_compb(timer0_irq_compb)
     );
+
+    // Instantiate Watchdog Timer
+    watchdog_timer wdt_inst (
+        .clk(clk),
+        .rst_n(rst_n),
+        .mem_valid(wdt_mem_valid),
+        .mem_addr(wdt_mem_addr),
+        .mem_wdata(wdt_mem_wdata),
+        .mem_wstrb(wdt_mem_wstrb),
+        .mem_rdata(wdt_mem_rdata),
+        .mem_ready(wdt_mem_ready),
+        .irq_wdt(wdt_irq),
+        .wdt_reset_req(wdt_reset_req_internal)
+    );
+
+    // Export WDT reset request
+    assign wdt_reset_req = wdt_reset_req_internal;
 
 endmodule
