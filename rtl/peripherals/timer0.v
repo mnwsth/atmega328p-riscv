@@ -196,9 +196,11 @@ module timer0 (
             else if (mode_ctc) begin
                 if (at_top) begin
                     tcnt0_next = 8'h00;
+                    // In CTC mode, overflow only occurs when TOP = MAX (0xFF)
+                    // per ATmega328P datasheet behavior
+                    if (top_value == 8'hFF) overflow_event = 1'b1;
                 end else begin
                     tcnt0_next = tcnt0 + 1'b1;
-                    if (tcnt0_next == 8'h00) overflow_event = 1'b1;
                 end
             end
             else if (mode_fast_pwm_ff || mode_fast_pwm_ocra) begin

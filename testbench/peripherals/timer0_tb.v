@@ -281,9 +281,12 @@ module timer0_tb;
         // Wait for compare match
         repeat(20) @(posedge clk);
         
-        // Check compare match flag
+        // Check compare match flag and verify TOV0 is NOT set
+        // Per ATmega328P datasheet: overflow flag should not be set in CTC mode
+        // when OCR0A < 0xFF (counter never reaches MAX)
         read_reg(TIFR0_ADDR);
         check_value("OCF0A set in CTC", mem_rdata[1], 1'b1);
+        check_value("TOV0 clear in CTC", mem_rdata[0], 1'b0);
         
         // Counter should have wrapped back
         read_reg(TCNT0_ADDR);
@@ -651,6 +654,57 @@ module timer0_tb;
             errors = errors + 1;
         end else begin
             $display("PASS: TCNT0 with /1024 = %d", mem_rdata[7:0]);
+        end
+
+        // =====================================================================
+        // Test 26: CTC Mode - TOV0 NOT set when OCR0A < 0xFF
+        // Per ATmega328P datasheet: In CTC mode, overflow only occurs at MAX
+        // =====================================================================
+        test_num = 26;
+        $display("\n=== Test %0d: CTC Mode - TOV0 not set (OCR0A < 0xFF) ===", test_num);
+        reset_timer();
+        
+        write_reg(OCR0A_ADDR, 8'h0F);  // TOP = 15 (not 0xFF)
+        write_reg(TCCR0A_ADDR, 8'h02); // WGM = 010 (CTC mode)
+        write_reg(TCCR0B_ADDR, CS_DIV1);
+        write_reg(TIMSK0_ADDR, 8'h01); // Enable overflow interrupt
+        
+        // Run through multiple CTC cycles (count 0->15, clear, repeat)
+        repeat(50) @(posedge clk);
+        
+        // Check that TOV0 is NOT set (counter never reaches 0xFF)
+        read_reg(TIFR0_ADDR);
+        if (mem_rdata[0] == 1'b0) begin
+            $display("PASS: TOV0 not set in CTC mode (OCR0A < 0xFF)");
+        end else begin
+            $display("ERROR: TOV0 should NOT be set in CTC mode when OCR0A < 0xFF");
+            errors = errors + 1;
+        end
+
+        // =====================================================================
+        // Test 27: CTC Mode - TOV0 IS set when OCR0A = 0xFF
+        // Per ATmega328P datasheet: When TOP=MAX, overflow occurs
+        // =====================================================================
+        test_num = 27;
+        $display("\n=== Test %0d: CTC Mode - TOV0 set (OCR0A = 0xFF) ===", test_num);
+        reset_timer();
+        
+        write_reg(OCR0A_ADDR, 8'hFF);  // TOP = 255 (MAX)
+        write_reg(TCCR0A_ADDR, 8'h02); // WGM = 010 (CTC mode)
+        write_reg(TCNT0_ADDR, 8'hFD);  // Start near MAX to speed up test
+        write_reg(TCCR0B_ADDR, CS_DIV1);
+        write_reg(TIMSK0_ADDR, 8'h01); // Enable overflow interrupt
+        
+        // Wait for counter to reach 0xFF and wrap
+        repeat(10) @(posedge clk);
+        
+        // Check that TOV0 IS set (counter reaches 0xFF and wraps)
+        read_reg(TIFR0_ADDR);
+        if (mem_rdata[0] == 1'b1) begin
+            $display("PASS: TOV0 set in CTC mode (OCR0A = 0xFF)");
+        end else begin
+            $display("ERROR: TOV0 should be set in CTC mode when OCR0A = 0xFF");
+            errors = errors + 1;
         end
 
         // =====================================================================
