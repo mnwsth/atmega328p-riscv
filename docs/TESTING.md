@@ -528,7 +528,7 @@ testbench/
 ├── tb_soc_timer0.v               # Timer0 integration test
 ├── peripherals/
 │   ├── analog_comparator_tb.v    # Analog Comparator unit test
-│   └── timer0_tb.v               # Timer0 unit test (25 tests)
+│   └── timer0_tb.v               # Timer0 unit test (27 tests)
 └── obj_dir/                      # Verilator build output
 ```
 
