@@ -2,7 +2,7 @@
 
 ## Current Implementation Status
 
-### ✅ Implemented Features (8/21)
+### ✅ Implemented Features (9/21)
 
 1. **CPU Core** - RISC-V PicoRV32 (different ISA but functional)
 2. **Program Memory** - 64KB ROM (exceeds ATmega328P's 32KB flash)
@@ -12,10 +12,11 @@
 6. **GPIO Port C** - 7 pins with PINC/DDRC/PORTC registers
 7. **Analog Comparator** - Compare AIN0/AIN1, Interrupt generation
 8. **Timer/Counter 0** - 8-bit timer with prescaler, PWM, compare match, interrupts
+9. **Watchdog Timer** - System reset/interrupt, programmable timeout, WDR command
 
 ---
 
-## Missing Features (14 Major Categories)
+## Missing Features (13 Major Categories)
 
 ### 1. GPIO Ports (0 missing)
 - **Total I/O**: Currently 23/23 pins (100% complete)
@@ -77,17 +78,20 @@
   - Auto-triggering modes
   - Temperature sensor input
   
-### 5. System Features (5 missing)
+### 5. System Features (4 missing)
 - **EEPROM**
   - 1KB non-volatile memory
   - Byte-level read/write
   - Endurance: 100,000 write/erase cycles
   
-- **Watchdog Timer**
-  - Separate on-chip oscillator
-  - Programmable timeout periods
-  - System reset capability
-  - Interrupt mode option
+- ✅ **Watchdog Timer** - **COMPLETED**
+  - Simulated 128kHz oscillator (128 clock divider)
+  - 8 programmable timeout periods (16ms to 8s)
+  - System reset capability with WDRF flag
+  - Interrupt mode, Reset mode, or Interrupt+Reset mode
+  - WDR command via magic value 0xA5
+  - Timed sequence for safe configuration changes
+  - 26 unit tests + integration tests
   
 - **Interrupt Controller**
   - External interrupts (INT0, INT1)
@@ -149,7 +153,7 @@
 
 ### Phase 5: System Features (Lower Priority)
 13. EEPROM emulation
-14. Watchdog Timer
+14. ✅ Watchdog Timer - **COMPLETED**
 15. Power Management (sleep modes)
 16. Brown-Out Detection
 
@@ -174,7 +178,7 @@
 | ADC | High | ~800 lines |
 | Analog Comparator | Low | ~150 lines | ✅ **COMPLETED** |
 | EEPROM | Medium | ~300 lines |
-| Watchdog Timer | Low | ~200 lines |
+| Watchdog Timer | Low | ~260 lines | ✅ **COMPLETED** |
 | Interrupt Controller | High | ~500 lines |
 | Power Management | Medium | ~400 lines |
 | Brown-Out Detection | Low | ~150 lines |

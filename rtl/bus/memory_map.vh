@@ -43,3 +43,8 @@
 `define TIMER0_OCR0B    32'h20000048  // Output Compare Register B
 `define TIMER0_TIMSK0   32'h2000006E  // Timer Interrupt Mask Register
 
+// Watchdog Timer Registers (matching ATmega328P addresses)
+`define WDT_MCUSR       32'h20000054  // MCU Status Register (contains WDRF)
+`define WDT_WDTCSR      32'h20000060  // Watchdog Timer Control and Status Register
+`define WDT_WDR         32'h20000061  // Watchdog Reset (write 0xA5 to reset counter)
+

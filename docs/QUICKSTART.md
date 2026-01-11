@@ -121,6 +121,10 @@ On macOS, `make view` automatically copies the VCD file to `/tmp/vcs_files/` for
   - Run `make timer0_unit` in testbench/ to run 27 Timer0 unit tests
   - Use `timer0_test.c` firmware for integration testing
   - Timer0 supports prescalers, PWM, compare match, and interrupts
+- Try Watchdog Timer functionality:
+  - Run `make wdt_unit` in testbench/ to run 26 WDT unit tests
+  - Run `make wdt_sim` for full SoC integration testing
+  - WDT supports interrupt mode, reset mode, and configurable timeouts
 - Implement additional peripherals (Timer1, Timer2, UART)
 - See `BUILD.md` for detailed instructions
 

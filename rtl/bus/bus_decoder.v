@@ -47,7 +47,15 @@ module bus_decoder (
     output reg  [31:0] timer0_mem_wdata,
     output reg  [3:0]  timer0_mem_wstrb,
     input  wire [31:0] timer0_mem_rdata,
-    input  wire        timer0_mem_ready
+    input  wire        timer0_mem_ready,
+
+    // Watchdog Timer interface
+    output reg         wdt_mem_valid,
+    output reg  [31:0] wdt_mem_addr,
+    output reg  [31:0] wdt_mem_wdata,
+    output reg  [3:0]  wdt_mem_wstrb,
+    input  wire [31:0] wdt_mem_rdata,
+    input  wire        wdt_mem_ready
 );
 
     // Address decoding
@@ -67,8 +75,12 @@ module bus_decoder (
                       (word_addr == 32'h20000048) ||  // OCR0B
                       (word_addr == 32'h2000006C);    // TIMSK0
     
+    // Watchdog Timer word-aligned selection
+    wire wdt_sel = (word_addr == 32'h20000054) ||     // MCUSR
+                   (word_addr == 32'h20000060);       // WDTCSR, WDR
+    
     // GPIO is default for other IO addresses
-    wire gpio_sel = io_sel && !ac_sel && !timer0_sel;
+    wire gpio_sel = io_sel && !ac_sel && !timer0_sel && !wdt_sel;
     
     // Address calculation (convert byte address to word address)
     wire [15:0] rom_word_addr = cpu_mem_addr[15:2];  // 64KB = 16K words (bits 15:2)
@@ -142,6 +154,21 @@ module bus_decoder (
             timer0_mem_wstrb = cpu_mem_wstrb;
         end
     end
+
+    // Watchdog Timer interface
+    always @(*) begin
+        wdt_mem_valid = 1'b0;
+        wdt_mem_addr = 32'h00000000;
+        wdt_mem_wdata = 32'h00000000;
+        wdt_mem_wstrb = 4'h0;
+        
+        if (cpu_mem_valid && wdt_sel) begin
+            wdt_mem_valid = 1'b1;
+            wdt_mem_addr = cpu_mem_addr;
+            wdt_mem_wdata = cpu_mem_wdata;
+            wdt_mem_wstrb = cpu_mem_wstrb;
+        end
+    end
     
     // Read data mux
     always @(*) begin
@@ -163,6 +190,9 @@ module bus_decoder (
         end else if (timer0_sel) begin
             cpu_mem_rdata = timer0_mem_rdata;
             cpu_mem_ready = timer0_mem_ready;
+        end else if (wdt_sel) begin
+            cpu_mem_rdata = wdt_mem_rdata;
+            cpu_mem_ready = wdt_mem_ready;
         end
     end
 

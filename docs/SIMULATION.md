@@ -24,6 +24,10 @@ The simulation duration depends on which testbench and firmware you use:
 - `peripherals/timer0_tb.v` - Comprehensive unit test (27 test cases)
 - `tb_soc_timer0.v` - Integration test with firmware
 
+**Watchdog Timer Testbenches:**
+- `peripherals/watchdog_timer_tb.v` - Comprehensive unit test (26 test cases)
+- `tb_soc_wdt.v` - Integration test with firmware
+
 ### Current Testbench Settings
 
 **Verilator Testbench:**
@@ -73,6 +77,18 @@ Once completed, the simulation will tell you:
 - ✅ Output Compare units (OC0A, OC0B) function correctly
 - ✅ Interrupt flags (TOV0, OCF0A, OCF0B) set and clear properly
 - ✅ External clock input (T0 pin) works for falling/rising edge
+
+### 2b. **Watchdog Timer Peripheral**
+- ✅ MCUSR and WDTCSR registers accessible at ATmega328P-compatible addresses
+- ✅ Simulated 128kHz oscillator via clock divider
+- ✅ All 8 prescaler settings work correctly (16ms to 8s timeouts)
+- ✅ Interrupt mode generates interrupt on timeout
+- ✅ System Reset mode generates reset request on timeout
+- ✅ Interrupt+Reset mode: first timeout triggers interrupt, second triggers reset
+- ✅ WDR (Watchdog Reset) command resets counter
+- ✅ Timed sequence for safe WDE/WDP changes
+- ✅ WDCE auto-clears after 32 cycles
+- ✅ WDIF flag is write-1-to-clear
 
 ### 3. **Memory System**
 - ✅ Program ROM responds to instruction fetches

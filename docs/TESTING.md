@@ -20,6 +20,8 @@ The project includes multiple testbenches to verify different aspects of the SoC
 | `peripherals/analog_comparator_tb.v` | Unit Test | Icarus Verilog | Analog Comparator peripheral |
 | `peripherals/timer0_tb.v` | Unit Test | Icarus Verilog | Timer0 peripheral (27 tests) |
 | `tb_soc_timer0.v` | Integration Test | Icarus Verilog | Timer0 SoC integration |
+| `peripherals/watchdog_timer_tb.v` | Unit Test | Icarus Verilog | Watchdog Timer peripheral (26 tests) |
+| `tb_soc_wdt.v` | Integration Test | Icarus Verilog | Watchdog Timer SoC integration |
 
 ---
 
@@ -522,6 +524,133 @@ gtkwave tb_soc.vcd &
 
 ---
 
+### 11. Watchdog Timer Unit Test (`peripherals/watchdog_timer_tb.v`)
+
+**Location:** `testbench/peripherals/watchdog_timer_tb.v`
+
+**Purpose:** Comprehensive unit testing of the Watchdog Timer peripheral.
+
+**Test Cases (26 tests):**
+
+| Test # | Description | Verification |
+|--------|-------------|--------------|
+| 1 | Reset Values | WDTCSR = 0x00, MCUSR = 0x00 after reset |
+| 2 | WDTCSR Read/Write | WDIE bit can be set |
+| 3 | WDTCSR WDE | WDE bit can be set |
+| 4 | MCUSR Read | MCUSR returns correct value |
+| 5 | Prescaler WDP3 | WDP3 bit can be set via timed sequence |
+| 6 | Prescaler WDP[2:0] | WDP[2:0] bits can be set via timed sequence |
+| 7 | IRQ before timeout | IRQ is 0 before timeout occurs |
+| 8 | WDIF set on timeout | WDIF flag set when timer overflows |
+| 9 | IRQ after timeout | IRQ asserted when WDIF is set |
+| 10 | No reset in INT mode | Reset request not generated in interrupt mode |
+| 11 | IRQ cleared | WDIF clears when written with 1 |
+| 12 | Reset request | Reset request generated in system reset mode |
+| 13 | WDRF set | WDRF flag set on watchdog reset |
+| 14 | WDRF cleared | WDRF flag can be cleared by writing 0 |
+| 15 | INT+RST: IRQ on 1st | First timeout generates interrupt in combined mode |
+| 16 | WDIE auto-cleared | WDIE auto-clears after first timeout in combined mode |
+| 17 | No reset on 1st | No reset on first timeout in combined mode |
+| 18 | Reset on 2nd | Reset generated on second timeout in combined mode |
+| 19 | WDR no IRQ at 1.5x | WDR command prevents timeout |
+| 20 | WDR + full timeout | IRQ fires after WDR + full timeout period |
+| 21 | WDE not cleared w/o seq | WDE cannot be cleared outside timed sequence |
+| 22 | WDE cleared with seq | WDE can be cleared during timed sequence |
+| 23 | WDCE auto-cleared | WDCE auto-clears after 32 cycles |
+
+**WDTCSR Register Bits:**
+- Bit 7: WDIF (Watchdog Interrupt Flag, write-1-to-clear)
+- Bit 6: WDIE (Watchdog Interrupt Enable)
+- Bit 5: WDP3 (Watchdog Prescaler bit 3)
+- Bit 4: WDCE (Watchdog Change Enable)
+- Bit 3: WDE (Watchdog Enable)
+- Bits 2:0: WDP[2:0] (Watchdog Prescaler bits)
+
+**MCUSR Register Bits:**
+- Bit 3: WDRF (Watchdog Reset Flag)
+
+**How to Run:**
+```bash
+cd testbench
+make wdt_unit
+```
+
+**Expected Output:**
+```
+========================================
+Watchdog Timer Unit Tests
+========================================
+Test 1: Reset Values
+  PASS: TCSR reset value
+  PASS: CUSR reset value
+...
+Test 10: WDCE Auto-clear
+  PASS: DCE auto-cleared
+
+========================================
+Test Summary
+========================================
+Total Tests:  26
+Passed:       26
+Failed:       0
+========================================
+ALL TESTS PASSED!
+```
+
+---
+
+### 12. Watchdog Timer Integration Test (`tb_soc_wdt.v`)
+
+**Location:** `testbench/tb_soc_wdt.v`
+
+**Purpose:** Tests Watchdog Timer integration with the full SoC using test firmware.
+
+**What it Tests:**
+- WDT register access from CPU
+- WDR command functionality
+- Interrupt generation on timeout
+- WDIF flag detection
+- Timed sequence for WDE/WDP changes
+
+**Requirements:**
+- Requires `wdt_test.c` firmware compiled and loaded
+
+**How to Run:**
+```bash
+cd testbench
+make wdt_sim
+```
+
+**Expected Output:**
+```
+========================================
+Watchdog Timer Integration Test
+========================================
+Starting SoC with WDT test firmware...
+[174] GPIO_B changed: 0x00 -> 0x01
+[393283] GPIO_B changed: 0x01 -> 0x03
+[655487] GPIO_B changed: 0x03 -> 0x07
+...
+[659452] *** TEST PASSED ***
+[659452] GPIO_B changed: 0xbf -> 0xaa
+
+========================================
+Integration Test Summary
+========================================
+Total cycles: 2000000
+RESULT: PASSED
+```
+
+**GPIO_B Test Stage Indicators:**
+- 0x01: WDT register access OK
+- 0x03: WDR command works
+- 0x07: WDT interrupt fires
+- 0x0F: WDIF flag set correctly
+- 0xAA: All tests passed
+- 0x55: Test failed
+
+---
+
 ## Test File Structure
 
 ```
@@ -536,11 +665,13 @@ testbench/
 ├── tb_soc_input.v                # GPIO input integration test
 ├── tb_soc_ac.v                   # Analog Comparator integration test
 ├── tb_soc_timer0.v               # Timer0 integration test
+├── tb_soc_wdt.v                  # Watchdog Timer integration test
 ├── tb_bus_decoder.v              # Bus decoder unit tests
 ├── tb_ram.v                      # RAM unit tests
 ├── peripherals/
 │   ├── analog_comparator_tb.v    # Analog Comparator unit test
-│   └── timer0_tb.v               # Timer0 unit test (27 tests)
+│   ├── timer0_tb.v               # Timer0 unit test (27 tests)
+│   └── watchdog_timer_tb.v       # Watchdog Timer unit test (26 tests)
 └── obj_dir/                      # Verilator build output
 ```
 
@@ -569,6 +700,9 @@ Tests use the following memory-mapped register addresses:
 | 0x20000048 | OCR0B | Timer0 Output Compare B |
 | 0x20000050 | ACSR | Analog Comparator Control/Status |
 | 0x2000006E | TIMSK0 | Timer0 Interrupt Mask Register |
+| 0x20000054 | MCUSR | MCU Status Register (WDRF bit) |
+| 0x20000060 | WDTCSR | Watchdog Timer Control/Status |
+| 0x20000061 | WDR | Watchdog Reset (write 0xA5) |
 
 ---
 

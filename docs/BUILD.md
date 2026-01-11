@@ -188,7 +188,9 @@ Once you have a working implementation:
 1. Test with the blinky program
 2. Run Timer0 unit tests: `cd testbench && make timer0_unit`
 3. Try Timer0 integration tests: `cd testbench && make timer0_sim`
-4. Add more peripherals (Timer1, Timer2, UART, etc.)
-5. Optimize for your specific FPGA
-6. Add more complex firmware examples using Timer0 for precise timing
+4. Run Watchdog Timer unit tests: `cd testbench && make wdt_unit`
+5. Try Watchdog Timer integration tests: `cd testbench && make wdt_sim`
+6. Add more peripherals (Timer1, Timer2, UART, etc.)
+7. Optimize for your specific FPGA
+8. Add more complex firmware examples using Timer0/WDT for precise timing
 
