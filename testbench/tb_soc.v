@@ -23,6 +23,10 @@ module tb_soc;
     reg [7:0] gpio_pin_in_c;
     wire [7:0] gpio_pin_out_c;
     wire [7:0] gpio_pin_dir_c;
+
+    // Analog Comparator signals
+    reg ain0;
+    reg ain1;
     
     // Instantiate DUT
     soc_top dut (
@@ -36,7 +40,9 @@ module tb_soc;
         .gpio_pin_dir_d(gpio_pin_dir_d),
         .gpio_pin_in_c(gpio_pin_in_c),
         .gpio_pin_out_c(gpio_pin_out_c),
-        .gpio_pin_dir_c(gpio_pin_dir_c)
+        .gpio_pin_dir_c(gpio_pin_dir_c),
+        .ain0(ain0),
+        .ain1(ain1)
     );
     
     // Clock generation (10MHz = 100ns period)
@@ -51,6 +57,8 @@ module tb_soc;
         gpio_pin_in_b = 8'h00;
         gpio_pin_in_d = 8'h00;
         gpio_pin_in_c = 8'h00;
+        ain0 = 0;
+        ain1 = 0;
         #1000;  // Hold reset for 1us
         rst_n = 1;
         $display("Reset released at time %0t", $time);
@@ -126,19 +134,4 @@ module tb_soc;
         end
     end
 
-    // Monitor GPIO Port C output
-    reg [7:0] prev_gpio_out_c;
-    initial begin
-        prev_gpio_out_c = 8'h00;
-        forever begin
-            @(posedge clk);
-            if (gpio_pin_out_c != prev_gpio_out_c) begin
-                $display("Time %0t: GPIO_PORTC = 0x%02x, GPIO_DIR_C = 0x%02x", 
-                         $time, gpio_pin_out_c, gpio_pin_dir_c);
-                prev_gpio_out_c = gpio_pin_out_c;
-            end
-        end
-    end
-
 endmodule
-

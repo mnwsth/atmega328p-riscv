@@ -31,13 +31,26 @@ module bus_decoder (
     output reg  [31:0] gpio_mem_wdata,
     output reg  [3:0]  gpio_mem_wstrb,
     input  wire [31:0] gpio_mem_rdata,
-    input  wire        gpio_mem_ready
+    input  wire        gpio_mem_ready,
+
+    // Analog Comparator interface
+    output reg         ac_mem_valid,
+    output reg  [31:0] ac_mem_addr,
+    output reg  [31:0] ac_mem_wdata,
+    output reg  [3:0]  ac_mem_wstrb,
+    input  wire [31:0] ac_mem_rdata,
+    input  wire        ac_mem_ready
 );
 
     // Address decoding
     wire rom_sel = (cpu_mem_addr & `MEM_ROM_MASK) == `MEM_ROM_BASE;
     wire ram_sel = (cpu_mem_addr & `MEM_RAM_MASK) == `MEM_RAM_BASE;
     wire io_sel  = (cpu_mem_addr & `MEM_IO_MASK)  == `MEM_IO_BASE;
+    
+    // Peripheral selection within IO space
+    wire ac_sel = (cpu_mem_addr == `ACSR);
+    // GPIO is default for other IO addresses for now, or we can be more specific
+    wire gpio_sel = io_sel && !ac_sel;
     
     // Address calculation (convert byte address to word address)
     wire [15:0] rom_word_addr = cpu_mem_addr[15:2];  // 64KB = 16K words (bits 15:2)
@@ -74,11 +87,26 @@ module bus_decoder (
         gpio_mem_wdata = 32'h00000000;
         gpio_mem_wstrb = 4'h0;
         
-        if (cpu_mem_valid && io_sel) begin
+        if (cpu_mem_valid && gpio_sel) begin
             gpio_mem_valid = 1'b1;
             gpio_mem_addr = cpu_mem_addr;
             gpio_mem_wdata = cpu_mem_wdata;
             gpio_mem_wstrb = cpu_mem_wstrb;
+        end
+    end
+
+    // Analog Comparator interface
+    always @(*) begin
+        ac_mem_valid = 1'b0;
+        ac_mem_addr = 32'h00000000;
+        ac_mem_wdata = 32'h00000000;
+        ac_mem_wstrb = 4'h0;
+        
+        if (cpu_mem_valid && ac_sel) begin
+            ac_mem_valid = 1'b1;
+            ac_mem_addr = cpu_mem_addr;
+            ac_mem_wdata = cpu_mem_wdata;
+            ac_mem_wstrb = cpu_mem_wstrb;
         end
     end
     
@@ -93,11 +121,13 @@ module bus_decoder (
         end else if (ram_sel) begin
             cpu_mem_rdata = ram_rdata;
             cpu_mem_ready = ram_rdata_valid;
-        end else if (io_sel) begin
+        end else if (gpio_sel) begin
             cpu_mem_rdata = gpio_mem_rdata;
             cpu_mem_ready = gpio_mem_ready;
+        end else if (ac_sel) begin
+            cpu_mem_rdata = ac_mem_rdata;
+            cpu_mem_ready = ac_mem_ready;
         end
     end
 
 endmodule
-

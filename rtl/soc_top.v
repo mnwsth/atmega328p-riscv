@@ -20,7 +20,11 @@ module soc_top (
     // GPIO Port C
     input  wire [7:0]  gpio_pin_in_c,
     output wire [7:0]  gpio_pin_out_c,
-    output wire [7:0]  gpio_pin_dir_c
+    output wire [7:0]  gpio_pin_dir_c,
+
+    // Analog Comparator
+    input  wire        ain0,
+    input  wire        ain1
 );
 
     // CPU memory interface
@@ -51,6 +55,14 @@ module soc_top (
     wire [3:0]  gpio_mem_wstrb;
     wire [31:0] gpio_mem_rdata;
     wire        gpio_mem_ready;
+
+    wire        ac_mem_valid;
+    wire [31:0] ac_mem_addr;
+    wire [31:0] ac_mem_wdata;
+    wire [3:0]  ac_mem_wstrb;
+    wire [31:0] ac_mem_rdata;
+    wire        ac_mem_ready;
+    wire        ac_irq;
     
     // Instantiate RISC-V core
     picorv32 #(
@@ -104,7 +116,7 @@ module soc_top (
         .pcpi_rd(32'h00000000),
         .pcpi_wait(1'b0),
         .pcpi_ready(1'b0),
-        .irq(32'h00000000),
+        .irq({31'b0, ac_irq}), // Connect AC IRQ to bit 0 for now
         .eoi()
     );
     
@@ -130,7 +142,13 @@ module soc_top (
         .gpio_mem_wdata(gpio_mem_wdata),
         .gpio_mem_wstrb(gpio_mem_wstrb),
         .gpio_mem_rdata(gpio_mem_rdata),
-        .gpio_mem_ready(gpio_mem_ready)
+        .gpio_mem_ready(gpio_mem_ready),
+        .ac_mem_valid(ac_mem_valid),
+        .ac_mem_addr(ac_mem_addr),
+        .ac_mem_wdata(ac_mem_wdata),
+        .ac_mem_wstrb(ac_mem_wstrb),
+        .ac_mem_rdata(ac_mem_rdata),
+        .ac_mem_ready(ac_mem_ready)
     );
     
     // Instantiate ROM
@@ -184,5 +202,19 @@ module soc_top (
         .gpio_pin_dir_c(gpio_pin_dir_c)
     );
 
-endmodule
+    // Instantiate Analog Comparator
+    analog_comparator ac_inst (
+        .clk(clk),
+        .rst_n(rst_n),
+        .ain0(ain0),
+        .ain1(ain1),
+        .mem_valid(ac_mem_valid),
+        .mem_addr(ac_mem_addr),
+        .mem_wdata(ac_mem_wdata),
+        .mem_wstrb(ac_mem_wstrb),
+        .mem_rdata(ac_mem_rdata),
+        .mem_ready(ac_mem_ready),
+        .irq(ac_irq)
+    );
 
+endmodule
