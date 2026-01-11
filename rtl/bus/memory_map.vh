@@ -34,3 +34,12 @@
 // Analog Comparator Registers
 `define ACSR            32'h20000050  // ACSR - Analog Comparator Control and Status Register
 
+// Timer/Counter 0 Registers (matching ATmega328P addresses)
+`define TIMER0_TIFR0    32'h20000035  // Timer Interrupt Flag Register
+`define TIMER0_TCCR0A   32'h20000044  // Timer Control Register A
+`define TIMER0_TCCR0B   32'h20000045  // Timer Control Register B
+`define TIMER0_TCNT0    32'h20000046  // Timer Counter Register
+`define TIMER0_OCR0A    32'h20000047  // Output Compare Register A
+`define TIMER0_OCR0B    32'h20000048  // Output Compare Register B
+`define TIMER0_TIMSK0   32'h2000006E  // Timer Interrupt Mask Register
+

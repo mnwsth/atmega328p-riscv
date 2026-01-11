@@ -24,7 +24,14 @@ module soc_top (
 
     // Analog Comparator
     input  wire        ain0,
-    input  wire        ain1
+    input  wire        ain1,
+
+    // Timer0 external clock input
+    input  wire        t0_pin,
+    
+    // Timer0 output compare pins
+    output wire        oc0a,
+    output wire        oc0b
 );
 
     // CPU memory interface
@@ -63,6 +70,16 @@ module soc_top (
     wire [31:0] ac_mem_rdata;
     wire        ac_mem_ready;
     wire        ac_irq;
+
+    wire        timer0_mem_valid;
+    wire [31:0] timer0_mem_addr;
+    wire [31:0] timer0_mem_wdata;
+    wire [3:0]  timer0_mem_wstrb;
+    wire [31:0] timer0_mem_rdata;
+    wire        timer0_mem_ready;
+    wire        timer0_irq_ovf;
+    wire        timer0_irq_compa;
+    wire        timer0_irq_compb;
     
     // Instantiate RISC-V core
     picorv32 #(
@@ -148,7 +165,13 @@ module soc_top (
         .ac_mem_wdata(ac_mem_wdata),
         .ac_mem_wstrb(ac_mem_wstrb),
         .ac_mem_rdata(ac_mem_rdata),
-        .ac_mem_ready(ac_mem_ready)
+        .ac_mem_ready(ac_mem_ready),
+        .timer0_mem_valid(timer0_mem_valid),
+        .timer0_mem_addr(timer0_mem_addr),
+        .timer0_mem_wdata(timer0_mem_wdata),
+        .timer0_mem_wstrb(timer0_mem_wstrb),
+        .timer0_mem_rdata(timer0_mem_rdata),
+        .timer0_mem_ready(timer0_mem_ready)
     );
     
     // Instantiate ROM
@@ -215,6 +238,24 @@ module soc_top (
         .mem_rdata(ac_mem_rdata),
         .mem_ready(ac_mem_ready),
         .irq(ac_irq)
+    );
+
+    // Instantiate Timer/Counter 0
+    timer0 timer0_inst (
+        .clk(clk),
+        .rst_n(rst_n),
+        .mem_valid(timer0_mem_valid),
+        .mem_addr(timer0_mem_addr),
+        .mem_wdata(timer0_mem_wdata),
+        .mem_wstrb(timer0_mem_wstrb),
+        .mem_rdata(timer0_mem_rdata),
+        .mem_ready(timer0_mem_ready),
+        .t0_pin(t0_pin),
+        .oc0a(oc0a),
+        .oc0b(oc0b),
+        .irq_ovf(timer0_irq_ovf),
+        .irq_compa(timer0_irq_compa),
+        .irq_compb(timer0_irq_compb)
     );
 
 endmodule
