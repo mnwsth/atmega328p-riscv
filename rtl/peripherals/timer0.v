@@ -73,15 +73,15 @@ module timer0 (
     reg       foc0b_pulse;
     
     // =========================================================================
-    // Address Decode
+    // Address Decode (using defines from memory_map.vh for maintainability)
     // =========================================================================
-    wire sel_tifr0  = (mem_addr[7:0] == 8'h35);
-    wire sel_tccr0a = (mem_addr[7:0] == 8'h44);
-    wire sel_tccr0b = (mem_addr[7:0] == 8'h45);
-    wire sel_tcnt0  = (mem_addr[7:0] == 8'h46);
-    wire sel_ocr0a  = (mem_addr[7:0] == 8'h47);
-    wire sel_ocr0b  = (mem_addr[7:0] == 8'h48);
-    wire sel_timsk0 = (mem_addr[7:0] == 8'h6E);
+    wire sel_tifr0  = (mem_addr == `TIMER0_TIFR0);
+    wire sel_tccr0a = (mem_addr == `TIMER0_TCCR0A);
+    wire sel_tccr0b = (mem_addr == `TIMER0_TCCR0B);
+    wire sel_tcnt0  = (mem_addr == `TIMER0_TCNT0);
+    wire sel_ocr0a  = (mem_addr == `TIMER0_OCR0A);
+    wire sel_ocr0b  = (mem_addr == `TIMER0_OCR0B);
+    wire sel_timsk0 = (mem_addr == `TIMER0_TIMSK0);
     
     wire timer0_sel = sel_tifr0 | sel_tccr0a | sel_tccr0b | 
                       sel_tcnt0 | sel_ocr0a | sel_ocr0b | sel_timsk0;

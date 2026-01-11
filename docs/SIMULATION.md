@@ -21,7 +21,7 @@ The simulation duration depends on which testbench and firmware you use:
 - `peripherals/analog_comparator_tb.v` - Unit test for analog comparator logic
 
 **Timer0 Testbenches:**
-- `peripherals/timer0_tb.v` - Comprehensive unit test (25 test cases)
+- `peripherals/timer0_tb.v` - Comprehensive unit test (27 test cases)
 - `tb_soc_timer0.v` - Integration test with firmware
 
 ### Current Testbench Settings

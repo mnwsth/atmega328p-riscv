@@ -16,7 +16,7 @@ The project includes multiple testbenches to verify different aspects of the SoC
 | `tb_soc_input.v` | Integration Test | Icarus Verilog | GPIO input functionality |
 | `tb_soc_ac.v` | Integration Test | Icarus Verilog | Analog Comparator integration |
 | `peripherals/analog_comparator_tb.v` | Unit Test | Icarus Verilog | Analog Comparator peripheral |
-| `peripherals/timer0_tb.v` | Unit Test | Icarus Verilog | Timer0 peripheral (25 tests) |
+| `peripherals/timer0_tb.v` | Unit Test | Icarus Verilog | Timer0 peripheral (27 tests) |
 | `tb_soc_timer0.v` | Integration Test | Icarus Verilog | Timer0 SoC integration |
 
 ---
@@ -380,7 +380,7 @@ All tests completed
 
 **Purpose:** Comprehensive unit testing of the Timer/Counter 0 peripheral.
 
-**Test Cases (25 tests):**
+**Test Cases (27 tests):**
 
 | Test # | Description | Verification |
 |--------|-------------|--------------|
@@ -409,6 +409,8 @@ All tests completed
 | 23 | Phase Correct PWM Mode | TOV0 set at BOTTOM |
 | 24 | Prescaler /256 | TCNT0 counts at clk/256 |
 | 25 | Prescaler /1024 | TCNT0 counts at clk/1024 |
+| 26 | CTC Mode - TOV0 not set (OCR0A < 0xFF) | TOV0 remains cleared |
+| 27 | CTC Mode - TOV0 set (OCR0A = 0xFF) | TOV0 set when TOP=MAX |
 
 **Timer0 Register Bits:**
 
@@ -437,8 +439,14 @@ PASS: TCCR0B reset = 00000000
 ...
 === Test 25: Prescaler /1024 ===
 PASS: TCNT0 with /1024 = 10
+
+=== Test 26: CTC Mode - TOV0 not set (OCR0A < 0xFF) ===
+PASS: TOV0 not set in CTC mode (OCR0A < 0xFF)
+
+=== Test 27: CTC Mode - TOV0 set (OCR0A = 0xFF) ===
+PASS: TOV0 set in CTC mode (OCR0A = 0xFF)
 ========================================
-Test Summary: 25 tests, 0 errors
+Test Summary: 27 tests, 0 errors
 ALL TESTS PASSED!
 ========================================
 ```
