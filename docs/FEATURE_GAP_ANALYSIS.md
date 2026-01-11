@@ -74,8 +74,6 @@
   - Auto-triggering modes
   - Temperature sensor input
   
-  - Temperature sensor input
-
 ### 5. System Features (5 missing)
 - **EEPROM**
   - 1KB non-volatile memory
