@@ -161,14 +161,18 @@ module tb_soc_timer0;
         end
     end
     
+    
     // Simulation timeout and result checking
     initial begin
+        // Wait for reset to complete before starting polling
+        #200;
+        
         // Wait for tests to complete (with timeout)
         // At 100MHz, 10ms = 1,000,000 cycles
         test_timeout = 0;
         
         // Poll for completion
-        while (gpio_pin_out_b != 8'hFF && test_timeout < 2000000) begin
+        while (gpio_pin_out_b !== 8'hFF && test_timeout < 2000000) begin
             @(posedge clk);
             test_timeout = test_timeout + 1;
         end

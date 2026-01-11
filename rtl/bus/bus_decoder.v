@@ -55,17 +55,17 @@ module bus_decoder (
     wire ram_sel = (cpu_mem_addr & `MEM_RAM_MASK) == `MEM_RAM_BASE;
     wire io_sel  = (cpu_mem_addr & `MEM_IO_MASK)  == `MEM_IO_BASE;
     
+    // Word-aligned address for peripheral selection
+    wire [31:0] word_addr = {cpu_mem_addr[31:2], 2'b00};
+    
     // Peripheral selection within IO space
     wire ac_sel = (cpu_mem_addr == `ACSR);
     
-    // Timer0 register selection
-    wire timer0_sel = (cpu_mem_addr == `TIMER0_TIFR0)  ||
-                      (cpu_mem_addr == `TIMER0_TCCR0A) ||
-                      (cpu_mem_addr == `TIMER0_TCCR0B) ||
-                      (cpu_mem_addr == `TIMER0_TCNT0)  ||
-                      (cpu_mem_addr == `TIMER0_OCR0A)  ||
-                      (cpu_mem_addr == `TIMER0_OCR0B)  ||
-                      (cpu_mem_addr == `TIMER0_TIMSK0);
+    // Timer0 word-aligned selection (Timer0 spans multiple words)
+    wire timer0_sel = (word_addr == 32'h20000034) ||  // TIFR0
+                      (word_addr == 32'h20000044) ||  // TCCR0A, TCCR0B, TCNT0, OCR0A
+                      (word_addr == 32'h20000048) ||  // OCR0B
+                      (word_addr == 32'h2000006C);    // TIMSK0
     
     // GPIO is default for other IO addresses
     wire gpio_sel = io_sel && !ac_sel && !timer0_sel;

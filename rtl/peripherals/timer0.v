@@ -73,18 +73,42 @@ module timer0 (
     reg       foc0b_pulse;
     
     // =========================================================================
-    // Address Decode (using defines from memory_map.vh for maintainability)
+    // Address Decode - Word-aligned addresses with byte lane selection
+    // PicoRV32 sends word-aligned addresses with wstrb indicating byte lane
     // =========================================================================
-    wire sel_tifr0  = (mem_addr == `TIMER0_TIFR0);
-    wire sel_tccr0a = (mem_addr == `TIMER0_TCCR0A);
-    wire sel_tccr0b = (mem_addr == `TIMER0_TCCR0B);
-    wire sel_tcnt0  = (mem_addr == `TIMER0_TCNT0);
-    wire sel_ocr0a  = (mem_addr == `TIMER0_OCR0A);
-    wire sel_ocr0b  = (mem_addr == `TIMER0_OCR0B);
-    wire sel_timsk0 = (mem_addr == `TIMER0_TIMSK0);
+    wire [31:0] word_addr = {mem_addr[31:2], 2'b00};  // Word-align the address
+    wire [1:0]  byte_lane = mem_addr[1:0];            // Byte lane within word
     
-    wire timer0_sel = sel_tifr0 | sel_tccr0a | sel_tccr0b | 
-                      sel_tcnt0 | sel_ocr0a | sel_ocr0b | sel_timsk0;
+    // Timer0 registers span multiple words:
+    // Word 0x20000034: byte 1 = TIFR0 (0x35)
+    // Word 0x20000044: byte 0 = TCCR0A (0x44), byte 1 = TCCR0B (0x45), 
+    //                  byte 2 = TCNT0 (0x46), byte 3 = OCR0A (0x47)
+    // Word 0x20000048: byte 0 = OCR0B (0x48)
+    // Word 0x2000006C: byte 2 = TIMSK0 (0x6E)
+    
+    wire sel_word_34   = (word_addr == 32'h20000034);  // Contains TIFR0
+    wire sel_word_44   = (word_addr == 32'h20000044);  // Contains TCCR0A, TCCR0B, TCNT0, OCR0A
+    wire sel_word_48   = (word_addr == 32'h20000048);  // Contains OCR0B
+    wire sel_word_6c   = (word_addr == 32'h2000006C);  // Contains TIMSK0
+    
+    // Write selection - based on which byte lane has wstrb set
+    wire sel_tifr0_wr  = sel_word_34 && mem_wstrb[1];   // Byte 1 of word 0x34
+    wire sel_tccr0a_wr = sel_word_44 && mem_wstrb[0];   // Byte 0 of word 0x44
+    wire sel_tccr0b_wr = sel_word_44 && mem_wstrb[1];   // Byte 1 of word 0x44
+    wire sel_tcnt0_wr  = sel_word_44 && mem_wstrb[2];   // Byte 2 of word 0x44
+    wire sel_ocr0a_wr  = sel_word_44 && mem_wstrb[3];   // Byte 3 of word 0x44
+    wire sel_ocr0b_wr  = sel_word_48 && mem_wstrb[0];   // Byte 0 of word 0x48
+    wire sel_timsk0_wr = sel_word_6c && mem_wstrb[2];   // Byte 2 of word 0x6C
+    
+    wire timer0_sel = sel_word_34 | sel_word_44 | sel_word_48 | sel_word_6c;
+
+    // =========================================================================
+    // Write Data Extraction - get byte from correct lane
+    // =========================================================================
+    wire [7:0] write_byte_0 = mem_wdata[7:0];
+    wire [7:0] write_byte_1 = mem_wdata[15:8];
+    wire [7:0] write_byte_2 = mem_wdata[23:16];
+    wire [7:0] write_byte_3 = mem_wdata[31:24];
 
     // =========================================================================
     // Waveform Generation Mode decoding
@@ -354,29 +378,34 @@ module timer0 (
             foc0a_pulse <= 1'b0;
             foc0b_pulse <= 1'b0;
             
-            // Register writes
+            // Register writes (each register uses its specific byte lane)
             if (bus_write) begin
-                if (sel_tccr0a && mem_wstrb[0]) begin
-                    com0a   <= mem_wdata[7:6];
-                    com0b   <= mem_wdata[5:4];
-                    wgm_low <= mem_wdata[1:0];
+                // TCCR0A is byte 0 of word 0x44
+                if (sel_tccr0a_wr) begin
+                    com0a   <= write_byte_0[7:6];
+                    com0b   <= write_byte_0[5:4];
+                    wgm_low <= write_byte_0[1:0];
                 end
-                if (sel_tccr0b && mem_wstrb[0]) begin
-                    foc0a_pulse <= mem_wdata[7];
-                    foc0b_pulse <= mem_wdata[6];
-                    wgm_high    <= mem_wdata[3];
-                    cs          <= mem_wdata[2:0];
+                // TCCR0B is byte 1 of word 0x44
+                if (sel_tccr0b_wr) begin
+                    foc0a_pulse <= write_byte_1[7];
+                    foc0b_pulse <= write_byte_1[6];
+                    wgm_high    <= write_byte_1[3];
+                    cs          <= write_byte_1[2:0];
                 end
-                if (sel_ocr0a && mem_wstrb[0]) begin
-                    ocr0a <= mem_wdata[7:0];
+                // OCR0A is byte 3 of word 0x44
+                if (sel_ocr0a_wr) begin
+                    ocr0a <= write_byte_3;
                 end
-                if (sel_ocr0b && mem_wstrb[0]) begin
-                    ocr0b <= mem_wdata[7:0];
+                // OCR0B is byte 0 of word 0x48
+                if (sel_ocr0b_wr) begin
+                    ocr0b <= write_byte_0;
                 end
-                if (sel_timsk0 && mem_wstrb[0]) begin
-                    ocie0b <= mem_wdata[2];
-                    ocie0a <= mem_wdata[1];
-                    toie0  <= mem_wdata[0];
+                // TIMSK0 is byte 2 of word 0x6C
+                if (sel_timsk0_wr) begin
+                    ocie0b <= write_byte_2[2];
+                    ocie0a <= write_byte_2[1];
+                    toie0  <= write_byte_2[0];
                 end
             end
         end
@@ -386,8 +415,9 @@ module timer0 (
     // Counter and Flag Updates
     // =========================================================================
     
-    wire tcnt0_write = bus_write && sel_tcnt0 && mem_wstrb[0];
-    wire tifr0_write = bus_write && sel_tifr0 && mem_wstrb[0];
+    // TCNT0 is byte 2 of word 0x44, TIFR0 is byte 1 of word 0x34
+    wire tcnt0_write = bus_write && sel_tcnt0_wr;
+    wire tifr0_write = bus_write && sel_tifr0_wr;
     
     always @(posedge clk or negedge rst_n) begin
         if (!rst_n) begin
@@ -397,9 +427,9 @@ module timer0 (
             ocf0a    <= 1'b0;
             ocf0b    <= 1'b0;
         end else begin
-            // Counter update
+            // Counter update (TCNT0 is byte 2)
             if (tcnt0_write) begin
-                tcnt0 <= mem_wdata[7:0];
+                tcnt0 <= write_byte_2;
             end else if (timer_clk_en) begin
                 tcnt0 <= tcnt0_next;
             end
@@ -414,22 +444,22 @@ module timer0 (
                 end
             end
             
-            // Overflow flag (write-1-to-clear)
-            if (tifr0_write && mem_wdata[0]) begin
+            // Overflow flag (write-1-to-clear, TIFR0 is byte 1)
+            if (tifr0_write && write_byte_1[0]) begin
                 tov0 <= 1'b0;
             end else if (timer_clk_en && overflow_event) begin
                 tov0 <= 1'b1;
             end
             
             // Compare Match A flag
-            if (tifr0_write && mem_wdata[1]) begin
+            if (tifr0_write && write_byte_1[1]) begin
                 ocf0a <= 1'b0;
             end else if (timer_clk_en && match_a_event) begin
                 ocf0a <= 1'b1;
             end
             
             // Compare Match B flag
-            if (tifr0_write && mem_wdata[2]) begin
+            if (tifr0_write && write_byte_1[2]) begin
                 ocf0b <= 1'b0;
             end else if (timer_clk_en && match_b_event) begin
                 ocf0b <= 1'b1;
@@ -449,6 +479,34 @@ module timer0 (
     // Bus Interface - Ready and Read Data
     // =========================================================================
     
+    // Read data bytes for each register
+    wire [7:0] tccr0a_byte = {com0a, com0b, 2'b00, wgm_low};
+    wire [7:0] tccr0b_byte = {2'b00, 1'b0, wgm_high, cs};
+    wire [7:0] tcnt0_byte  = tcnt0;
+    wire [7:0] ocr0a_byte  = ocr0a;
+    wire [7:0] ocr0b_byte  = ocr0b;
+    wire [7:0] timsk0_byte = {5'b00000, ocie0b, ocie0a, toie0};
+    wire [7:0] tifr0_byte  = {5'b00000, ocf0b, ocf0a, tov0};
+    
+    // Pack read data based on word address - return full word with all byte lanes
+    reg [31:0] read_word;
+    always @(*) begin
+        read_word = 32'h0;
+        if (sel_word_34) begin
+            // Word 0x20000034: byte 1 = TIFR0
+            read_word = {16'h0, tifr0_byte, 8'h0};
+        end else if (sel_word_44) begin
+            // Word 0x20000044: byte 0 = TCCR0A, byte 1 = TCCR0B, byte 2 = TCNT0, byte 3 = OCR0A
+            read_word = {ocr0a_byte, tcnt0_byte, tccr0b_byte, tccr0a_byte};
+        end else if (sel_word_48) begin
+            // Word 0x20000048: byte 0 = OCR0B
+            read_word = {24'h0, ocr0b_byte};
+        end else if (sel_word_6c) begin
+            // Word 0x2000006C: byte 2 = TIMSK0
+            read_word = {8'h0, timsk0_byte, 16'h0};
+        end
+    end
+    
     always @(posedge clk or negedge rst_n) begin
         if (!rst_n) begin
             mem_ready <= 1'b0;
@@ -458,18 +516,7 @@ module timer0 (
             
             if (mem_valid && timer0_sel && !mem_ready) begin
                 mem_ready <= 1'b1;
-                
-                // Read data mux
-                case (1'b1)
-                    sel_tccr0a: mem_rdata <= {24'h0, com0a, com0b, 2'b00, wgm_low};
-                    sel_tccr0b: mem_rdata <= {24'h0, 2'b00, 1'b0, wgm_high, cs};
-                    sel_tcnt0:  mem_rdata <= {24'h0, tcnt0};
-                    sel_ocr0a:  mem_rdata <= {24'h0, ocr0a};
-                    sel_ocr0b:  mem_rdata <= {24'h0, ocr0b};
-                    sel_timsk0: mem_rdata <= {24'h0, 5'b00000, ocie0b, ocie0a, toie0};
-                    sel_tifr0:  mem_rdata <= {24'h0, 5'b00000, ocf0b, ocf0a, tov0};
-                    default:    mem_rdata <= 32'h0;
-                endcase
+                mem_rdata <= read_word;
             end
         end
     end
