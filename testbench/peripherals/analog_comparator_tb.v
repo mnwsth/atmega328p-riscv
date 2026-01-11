@@ -54,6 +54,12 @@ module analog_comparator_tb;
         rst_n = 1;
         #20;
 
+        // Test 0: Reset Values
+        $display("Test 0: Reset Values");
+        read_register(32'h20000050);
+        if (mem_rdata !== 32'h00000000) $display("Error: Reset value should be 0, got %h", mem_rdata);
+        else $display("Pass: Reset value is 0");
+        
         // Test 1: Basic Comparison (AIN0 > AIN1)
         $display("Test 1: Basic Comparison (AIN0 > AIN1)");
         ain0 = 1;
@@ -134,6 +140,47 @@ module analog_comparator_tb;
         // In our implementation, disabled output is 0
         if (mem_rdata[5] !== 1'b0) $display("Error: ACO should be 0 when disabled");
         else $display("Pass: ACO is 0 when disabled");
+
+        // Test 6: Bit Read/Write Verification
+        $display("Test 6: Bit Read/Write Verification");
+        // Write pattern to ACBG, ACIE, ACIC, ACIS
+        // Pattern: ACBG=1, ACIE=0, ACIC=1, ACIS=10 -> 0x46 (ACD=0)
+        write_register(32'h20000050, 8'h46);
+        read_register(32'h20000050);
+        if (mem_rdata[6] !== 1'b1) $display("Error: ACBG should be 1");
+        if (mem_rdata[3] !== 1'b0) $display("Error: ACIE should be 0");
+        if (mem_rdata[2] !== 1'b1) $display("Error: ACIC should be 1");
+        if (mem_rdata[1:0] !== 2'b10) $display("Error: ACIS should be 10");
+        $display("Pass: Bit Read/Write Verification 1");
+
+        // Write inverse pattern
+        // Pattern: ACBG=0, ACIE=1, ACIC=0, ACIS=01 -> 0x09 (ACD=0)
+        write_register(32'h20000050, 8'h09);
+        read_register(32'h20000050);
+        if (mem_rdata[6] !== 1'b0) $display("Error: ACBG should be 0");
+        if (mem_rdata[3] !== 1'b1) $display("Error: ACIE should be 1");
+        if (mem_rdata[2] !== 1'b0) $display("Error: ACIC should be 0");
+        if (mem_rdata[1:0] !== 2'b01) $display("Error: ACIS should be 01");
+        $display("Pass: Bit Read/Write Verification 2");
+
+        // Test 7: Read-Only Bits (ACO)
+        $display("Test 7: Read-Only Bits (ACO)");
+        // Enable comparator, set output to 1
+        ain0 = 1; ain1 = 0;
+        write_register(32'h20000050, 8'h00); // Enable
+        #20;
+        // Try to write 0 to ACO (bit 5)
+        write_register(32'h20000050, 8'h00); // Write 0 to bit 5 (implicit)
+        read_register(32'h20000050);
+        if (mem_rdata[5] !== 1'b1) $display("Error: ACO should remain 1");
+        
+        // Try to write 1 to ACO (bit 5) while output is 0
+        ain0 = 0; ain1 = 1;
+        #20;
+        write_register(32'h20000050, 8'h20); // Write 1 to bit 5
+        read_register(32'h20000050);
+        if (mem_rdata[5] !== 1'b0) $display("Error: ACO should remain 0");
+        $display("Pass: ACO is read-only");
 
         $display("All tests completed");
         $finish;

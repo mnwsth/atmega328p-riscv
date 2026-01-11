@@ -120,6 +120,43 @@ module tb_soc_ac;
         else
             $display("FAIL: CPU IRQ[0] is %b", dut.cpu.irq[0]);
             
+        // Test 4: Bus Aliasing Check
+        $display("Test 4: Bus Aliasing Check");
+        // Write to ACSR and check if GPIO registers are affected
+        // ACSR is at 0x20000050
+        // GPIO Port B DDR is at 0x20000024
+        
+        // We can't easily write to bus from here as we are outside the CPU.
+        // However, we can check if writing to GPIO (via firmware/CPU simulation) affects ACSR.
+        // Since we are not running firmware here, we can only check default values or force signals.
+        
+        // Let's verify that the address decoding logic in bus_decoder is correct by inspection or by 
+        // simulating bus transactions if we had a bus master BFM.
+        // Since we don't, we will rely on the fact that we verified bus_decoder in unit tests (implicitly via soc_test).
+        
+        // But wait, we can check if the ACSR register changes when we toggle GPIO pins? No, that's external.
+        // We can check if `dut.decoder.ac_sel` is strictly decoding 0x50.
+        // We can force cpu_mem_addr to 0x20000024 and check ac_sel.
+        
+        force dut.cpu_mem_valid = 1'b1;
+        force dut.cpu_mem_addr = 32'h20000024; // GPIO DDRB
+        #10;
+        if (dut.decoder.ac_sel === 1'b1) $display("FAIL: AC selected at GPIO address!");
+        else $display("PASS: AC not selected at GPIO address");
+        
+        force dut.cpu_mem_addr = 32'h20000050; // ACSR
+        #10;
+        if (dut.decoder.ac_sel === 1'b1) $display("PASS: AC selected at ACSR address");
+        else $display("FAIL: AC not selected at ACSR address");
+        
+        force dut.cpu_mem_addr = 32'h20000054; // Near ACSR
+        #10;
+        if (dut.decoder.ac_sel === 1'b1) $display("FAIL: AC selected at 0x54!");
+        else $display("PASS: AC not selected at 0x54");
+        
+        release dut.cpu_mem_valid;
+        release dut.cpu_mem_addr;
+
         $display("Integration Test Complete");
         $finish;
     end
