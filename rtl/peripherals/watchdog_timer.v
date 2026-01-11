@@ -95,21 +95,22 @@ module watchdog_timer (
     // Timeout Period Calculation
     // =========================================================================
     
-    reg [19:0] timeout_cycles;
+    // 21 bits needed to hold 2^20 = 1048576
+    reg [20:0] timeout_cycles;
     
     always @(*) begin
         case (wdp_full)
-            4'b0000: timeout_cycles = 20'd2048;
-            4'b0001: timeout_cycles = 20'd4096;
-            4'b0010: timeout_cycles = 20'd8192;
-            4'b0011: timeout_cycles = 20'd16384;
-            4'b0100: timeout_cycles = 20'd32768;
-            4'b0101: timeout_cycles = 20'd65536;
-            4'b0110: timeout_cycles = 20'd131072;
-            4'b0111: timeout_cycles = 20'd262144;
-            4'b1000: timeout_cycles = 20'd524288;
-            4'b1001: timeout_cycles = 20'd1048575;
-            default: timeout_cycles = 20'd2048;
+            4'b0000: timeout_cycles = 21'd2048;      // 2^11
+            4'b0001: timeout_cycles = 21'd4096;      // 2^12
+            4'b0010: timeout_cycles = 21'd8192;      // 2^13
+            4'b0011: timeout_cycles = 21'd16384;     // 2^14
+            4'b0100: timeout_cycles = 21'd32768;     // 2^15
+            4'b0101: timeout_cycles = 21'd65536;     // 2^16
+            4'b0110: timeout_cycles = 21'd131072;    // 2^17
+            4'b0111: timeout_cycles = 21'd262144;    // 2^18
+            4'b1000: timeout_cycles = 21'd524288;    // 2^19
+            4'b1001: timeout_cycles = 21'd1048576;   // 2^20
+            default: timeout_cycles = 21'd2048;
         endcase
     end
     
@@ -117,7 +118,8 @@ module watchdog_timer (
     // Watchdog Counter and Timeout
     // =========================================================================
     
-    reg [19:0] wdt_counter;
+    // 21 bits to match timeout_cycles width (can count up to 2^20)
+    reg [20:0] wdt_counter;
     wire wdt_enabled = wde | wdie;
     wire wdt_timeout = wdt_enabled && (wdt_counter >= timeout_cycles);
     reg timeout_event;
@@ -147,7 +149,7 @@ module watchdog_timer (
             wdp3 <= 1'b0;
             wdp  <= 3'b0;
             wdce_counter <= 6'b0;
-            wdt_counter <= 20'b0;
+            wdt_counter <= 21'b0;
             timeout_event <= 1'b0;
             wdt_reset_req <= 1'b0;
             mem_ready <= 1'b0;
@@ -198,7 +200,7 @@ module watchdog_timer (
                 
                 // WDR write (Watchdog Reset command)
                 if (sel_wdr_wr && (write_byte_1 == 8'hA5)) begin
-                    wdt_counter <= 20'b0;
+                    wdt_counter <= 21'b0;
                 end
                 
                 // MCUSR write
@@ -238,7 +240,7 @@ module watchdog_timer (
                 // Only update counter if WDR was NOT issued this cycle
                 if (wdt_timeout) begin
                     timeout_event <= 1'b1;
-                    wdt_counter <= 20'b0;
+                    wdt_counter <= 21'b0;
                     
                     // Handle timeout based on mode
                     if (wdie) begin
@@ -256,7 +258,7 @@ module watchdog_timer (
                 end else if (wdt_enabled && wdt_osc_tick) begin
                     wdt_counter <= wdt_counter + 1'b1;
                 end else if (!wdt_enabled) begin
-                    wdt_counter <= 20'b0;
+                    wdt_counter <= 21'b0;
                 end
             end
         end

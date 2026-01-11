@@ -2,6 +2,28 @@
 
 This document provides comprehensive documentation of all tests available in the ATmega328P RISC-V Replica project, including how to run them and what they verify.
 
+## Test Summary
+
+| Category | Testbench | Tests | Status |
+|----------|-----------|-------|--------|
+| Timer0 | `peripherals/timer0_tb.v` | 27 | ✅ All Pass |
+| Watchdog Timer | `peripherals/watchdog_timer_tb.v` | 26 | ✅ All Pass |
+| Analog Comparator | `peripherals/analog_comparator_tb.v` | 11 | ✅ All Pass |
+| GPIO Port B | `tb_gpio_portb.v` | 10 | ✅ All Pass |
+| GPIO Port C | `tb_gpio_portc.v` | 10 | ✅ All Pass |
+| GPIO Port D | `tb_gpio_portd.v` | 10 | ✅ All Pass |
+| Bus Decoder | `tb_bus_decoder.v` | 10 | ✅ All Pass |
+| RAM | `tb_ram.v` | 10 | ✅ All Pass |
+| **Total Unit Tests** | | **114** | ✅ |
+
+| Integration Test | Testbench | Status |
+|-----------------|-----------|--------|
+| WDT SoC | `tb_soc_wdt.v` | ✅ Pass (0xAA) |
+| Timer0 SoC | `tb_soc_timer0.v` | ✅ Pass (8 stages) |
+| Main SoC | `tb_soc.v` | ✅ Pass |
+
+---
+
 ## Overview
 
 The project includes multiple testbenches to verify different aspects of the SoC:
@@ -332,18 +354,18 @@ Integration Test Complete
 
 **Purpose:** Comprehensive unit testing of the Analog Comparator peripheral.
 
-**Test Cases:**
+**Test Cases (8 test groups, 11 individual checks):**
 
-| Test # | Description | Verification |
-|--------|-------------|--------------|
-| 0 | Reset Values | ACSR = 0x00 after reset |
-| 1 | Basic Comparison (AIN0 > AIN1) | ACO = 1 |
-| 2 | Basic Comparison (AIN0 < AIN1) | ACO = 0 |
-| 3 | Interrupt - Toggle Mode | IRQ triggers on ACO toggle |
-| 4 | Interrupt - Rising Edge Mode | IRQ only triggers on rising edge |
-| 5 | Disable Comparator | ACO = 0 when ACD = 1 |
-| 6 | Bit Read/Write | ACBG, ACIE, ACIC, ACIS bits work correctly |
-| 7 | Read-Only Bits | ACO cannot be written |
+| Test # | Description | Checks |
+|--------|-------------|--------|
+| 0 | Reset Values | ACSR = 0x00 after reset | 1 |
+| 1 | Basic Comparison (AIN0 > AIN1) | ACO = 1 | 1 |
+| 2 | Basic Comparison (AIN0 < AIN1) | ACO = 0 | 1 |
+| 3 | Interrupt - Toggle Mode | IRQ triggers on toggle, IRQ cleared | 2 |
+| 4 | Interrupt - Rising Edge Mode | No IRQ on falling, IRQ on rising | 2 |
+| 5 | Disable Comparator | ACO = 0 when ACD = 1 | 1 |
+| 6 | Bit Read/Write | ACBG, ACIE, ACIC, ACIS bits work correctly | 2 |
+| 7 | Read-Only Bits | ACO cannot be written | 1 |
 
 **ACSR Register Bits:**
 - Bit 7: ACD (Analog Comparator Disable)
@@ -530,33 +552,20 @@ gtkwave tb_soc.vcd &
 
 **Purpose:** Comprehensive unit testing of the Watchdog Timer peripheral.
 
-**Test Cases (26 tests):**
+**Test Cases (10 test groups, 26 individual checks):**
 
-| Test # | Description | Verification |
-|--------|-------------|--------------|
-| 1 | Reset Values | WDTCSR = 0x00, MCUSR = 0x00 after reset |
-| 2 | WDTCSR Read/Write | WDIE bit can be set |
-| 3 | WDTCSR WDE | WDE bit can be set |
-| 4 | MCUSR Read | MCUSR returns correct value |
-| 5 | Prescaler WDP3 | WDP3 bit can be set via timed sequence |
-| 6 | Prescaler WDP[2:0] | WDP[2:0] bits can be set via timed sequence |
-| 7 | IRQ before timeout | IRQ is 0 before timeout occurs |
-| 8 | WDIF set on timeout | WDIF flag set when timer overflows |
-| 9 | IRQ after timeout | IRQ asserted when WDIF is set |
-| 10 | No reset in INT mode | Reset request not generated in interrupt mode |
-| 11 | IRQ cleared | WDIF clears when written with 1 |
-| 12 | Reset request | Reset request generated in system reset mode |
-| 13 | WDRF set | WDRF flag set on watchdog reset |
-| 14 | WDRF cleared | WDRF flag can be cleared by writing 0 |
-| 15 | INT+RST: IRQ on 1st | First timeout generates interrupt in combined mode |
-| 16 | WDIE auto-cleared | WDIE auto-clears after first timeout in combined mode |
-| 17 | No reset on 1st | No reset on first timeout in combined mode |
-| 18 | Reset on 2nd | Reset generated on second timeout in combined mode |
-| 19 | WDR no IRQ at 1.5x | WDR command prevents timeout |
-| 20 | WDR + full timeout | IRQ fires after WDR + full timeout period |
-| 21 | WDE not cleared w/o seq | WDE cannot be cleared outside timed sequence |
-| 22 | WDE cleared with seq | WDE can be cleared during timed sequence |
-| 23 | WDCE auto-cleared | WDCE auto-clears after 32 cycles |
+| Test Group | Description | Checks |
+|------------|-------------|--------|
+| 1. Reset Values | WDTCSR = 0x00, MCUSR = 0x00, IRQ = 0, Reset = 0 | 4 |
+| 2. WDTCSR Read/Write | WDIE and WDE bits can be set | 2 |
+| 3. MCUSR Read/Write | MCUSR returns correct value | 1 |
+| 4. Prescaler Settings | WDP3 and WDP[2:0] bits configurable via timed sequence | 2 |
+| 5. Interrupt Mode | IRQ before/after timeout, WDIF flag, no reset in INT mode, IRQ clear | 5 |
+| 6. System Reset Mode | Reset request generated, WDRF set and can be cleared | 3 |
+| 7. Interrupt + Reset Mode | First timeout → IRQ, WDIE auto-clear, second timeout → reset | 4 |
+| 8. WDR Functionality | WDR prevents timeout, IRQ fires after WDR + full period | 2 |
+| 9. Timed Sequence | WDE cannot be cleared outside sequence, can be cleared within | 2 |
+| 10. WDCE Auto-clear | WDCE auto-clears after 32 cycles | 1 |
 
 **WDTCSR Register Bits:**
 - Bit 7: WDIF (Watchdog Interrupt Flag, write-1-to-clear)

@@ -215,6 +215,7 @@ This project implements a RISC-V based System-on-Chip (SoC) that replicates the 
   - 1000: 512K cycles (~4s)
   - 1001: 1M cycles (~8s)
 - **Implementation Notes**:
+  - 21-bit counter and timeout registers to support full 2^20 cycle timeout (WDP=1001)
   - 26 comprehensive unit tests verify all functionality
   - Full integration test with C firmware
   - Timed sequence window extended to 32 cycles for RISC-V compatibility

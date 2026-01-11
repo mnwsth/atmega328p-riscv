@@ -178,7 +178,7 @@
 | ADC | High | ~800 lines |
 | Analog Comparator | Low | ~150 lines | ✅ **COMPLETED** |
 | EEPROM | Medium | ~300 lines |
-| Watchdog Timer | Low | ~260 lines | ✅ **COMPLETED** |
+| Watchdog Timer | Low | ~270 lines | ✅ **COMPLETED** |
 | Interrupt Controller | High | ~500 lines |
 | Power Management | Medium | ~400 lines |
 | Brown-Out Detection | Low | ~150 lines |
