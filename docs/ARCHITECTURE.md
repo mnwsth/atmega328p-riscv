@@ -167,7 +167,7 @@ This project implements a RISC-V based System-on-Chip (SoC) that replicates the 
 - **Implementation Notes**:
   - Full ATmega328P register compatibility
   - All prescaler modes implemented including external clock
-  - 25 comprehensive unit tests verify all functionality
+  - 27 comprehensive unit tests verify all functionality
 
 ## Bus Protocol
 
