@@ -107,25 +107,25 @@ module timer0_tb;
         $display("\n=== Test %0d: Reset Values ===", test_num);
         
         read_reg(TCCR0A_ADDR);
-        check_value("TCCR0A reset", mem_rdata[7:0], 8'h00);
+        check_value("TCCR0A reset", read_byte, 8'h00);
         
         read_reg(TCCR0B_ADDR);
-        check_value("TCCR0B reset", mem_rdata[7:0], 8'h00);
+        check_value("TCCR0B reset", read_byte, 8'h00);
         
         read_reg(TCNT0_ADDR);
-        check_value("TCNT0 reset", mem_rdata[7:0], 8'h00);
+        check_value("TCNT0 reset", read_byte, 8'h00);
         
         read_reg(OCR0A_ADDR);
-        check_value("OCR0A reset", mem_rdata[7:0], 8'h00);
+        check_value("OCR0A reset", read_byte, 8'h00);
         
         read_reg(OCR0B_ADDR);
-        check_value("OCR0B reset", mem_rdata[7:0], 8'h00);
+        check_value("OCR0B reset", read_byte, 8'h00);
         
         read_reg(TIMSK0_ADDR);
-        check_value("TIMSK0 reset", mem_rdata[7:0], 8'h00);
+        check_value("TIMSK0 reset", read_byte, 8'h00);
         
         read_reg(TIFR0_ADDR);
-        check_value("TIFR0 reset", mem_rdata[7:0], 8'h00);
+        check_value("TIFR0 reset", read_byte, 8'h00);
 
         // =====================================================================
         // Test 2: Register Read/Write
@@ -136,27 +136,27 @@ module timer0_tb;
         // Write and readback all writable registers
         write_reg(TCCR0A_ADDR, 8'hC3); // COM0A=11, COM0B=00, WGM=11
         read_reg(TCCR0A_ADDR);
-        check_value("TCCR0A write", mem_rdata[7:0], 8'hC3);
+        check_value("TCCR0A write", read_byte, 8'hC3);
         
         write_reg(TCCR0B_ADDR, 8'h0D); // WGM02=1, CS=101
         read_reg(TCCR0B_ADDR);
-        check_value("TCCR0B write", mem_rdata[7:0], 8'h0D);
+        check_value("TCCR0B write", read_byte, 8'h0D);
         
         write_reg(TCNT0_ADDR, 8'hAA);
         read_reg(TCNT0_ADDR);
-        check_value("TCNT0 write", mem_rdata[7:0], 8'hAA);
+        check_value("TCNT0 write", read_byte, 8'hAA);
         
         write_reg(OCR0A_ADDR, 8'h55);
         read_reg(OCR0A_ADDR);
-        check_value("OCR0A write", mem_rdata[7:0], 8'h55);
+        check_value("OCR0A write", read_byte, 8'h55);
         
         write_reg(OCR0B_ADDR, 8'hBB);
         read_reg(OCR0B_ADDR);
-        check_value("OCR0B write", mem_rdata[7:0], 8'hBB);
+        check_value("OCR0B write", read_byte, 8'hBB);
         
         write_reg(TIMSK0_ADDR, 8'h07); // All interrupt enables
         read_reg(TIMSK0_ADDR);
-        check_value("TIMSK0 write", mem_rdata[7:0], 8'h07);
+        check_value("TIMSK0 write", read_byte, 8'h07);
         
         // Reset for next tests
         reset_timer();
@@ -174,7 +174,7 @@ module timer0_tb;
         repeat(100) @(posedge clk);
         
         read_reg(TCNT0_ADDR);
-        check_value("TCNT0 stopped", mem_rdata[7:0], 8'h00);
+        check_value("TCNT0 stopped", read_byte, 8'h00);
 
         // =====================================================================
         // Test 4: Normal Mode with Prescaler /1
@@ -191,11 +191,11 @@ module timer0_tb;
         
         read_reg(TCNT0_ADDR);
         // Should have counted ~10 (minus bus transaction time)
-        if (mem_rdata[7:0] < 8) begin
-            $display("ERROR: TCNT0 should be >= 8, got %d", mem_rdata[7:0]);
+        if (read_byte < 8) begin
+            $display("ERROR: TCNT0 should be >= 8, got %d", read_byte);
             errors = errors + 1;
         end else begin
-            $display("PASS: TCNT0 counted to %d", mem_rdata[7:0]);
+            $display("PASS: TCNT0 counted to %d", read_byte);
         end
 
         // =====================================================================
@@ -215,13 +215,13 @@ module timer0_tb;
         
         // Check overflow flag
         read_reg(TIFR0_ADDR);
-        check_value("TOV0 set", mem_rdata[0], 1'b1);
+        check_value("TOV0 set", read_byte[0], 1'b1);
         check_value("IRQ overflow", irq_ovf, 1'b1);
         
         // Clear flag by writing 1
         write_reg(TIFR0_ADDR, 8'h01);
         read_reg(TIFR0_ADDR);
-        check_value("TOV0 cleared", mem_rdata[0], 1'b0);
+        check_value("TOV0 cleared", read_byte[0], 1'b0);
         check_value("IRQ cleared", irq_ovf, 1'b0);
 
         // =====================================================================
@@ -238,11 +238,11 @@ module timer0_tb;
         repeat(80) @(posedge clk);
         
         read_reg(TCNT0_ADDR);
-        if (mem_rdata[7:0] < 8 || mem_rdata[7:0] > 12) begin
-            $display("ERROR: TCNT0 with /8 should be ~10, got %d", mem_rdata[7:0]);
+        if (read_byte < 8 || read_byte > 12) begin
+            $display("ERROR: TCNT0 with /8 should be ~10, got %d", read_byte);
             errors = errors + 1;
         end else begin
-            $display("PASS: TCNT0 with /8 = %d", mem_rdata[7:0]);
+            $display("PASS: TCNT0 with /8 = %d", read_byte);
         end
 
         // =====================================================================
@@ -259,11 +259,11 @@ module timer0_tb;
         repeat(640) @(posedge clk);
         
         read_reg(TCNT0_ADDR);
-        if (mem_rdata[7:0] < 8 || mem_rdata[7:0] > 12) begin
-            $display("ERROR: TCNT0 with /64 should be ~10, got %d", mem_rdata[7:0]);
+        if (read_byte < 8 || read_byte > 12) begin
+            $display("ERROR: TCNT0 with /64 should be ~10, got %d", read_byte);
             errors = errors + 1;
         end else begin
-            $display("PASS: TCNT0 with /64 = %d", mem_rdata[7:0]);
+            $display("PASS: TCNT0 with /64 = %d", read_byte);
         end
 
         // =====================================================================
@@ -285,16 +285,16 @@ module timer0_tb;
         // Per ATmega328P datasheet: overflow flag should not be set in CTC mode
         // when OCR0A < 0xFF (counter never reaches MAX)
         read_reg(TIFR0_ADDR);
-        check_value("OCF0A set in CTC", mem_rdata[1], 1'b1);
-        check_value("TOV0 clear in CTC", mem_rdata[0], 1'b0);
+        check_value("OCF0A set in CTC", read_byte[1], 1'b1);
+        check_value("TOV0 clear in CTC", read_byte[0], 1'b0);
         
         // Counter should have wrapped back
         read_reg(TCNT0_ADDR);
-        if (mem_rdata[7:0] > 8'h0F) begin
-            $display("ERROR: TCNT0 should wrap at OCR0A, got %d", mem_rdata[7:0]);
+        if (read_byte > 8'h0F) begin
+            $display("ERROR: TCNT0 should wrap at OCR0A, got %d", read_byte);
             errors = errors + 1;
         end else begin
-            $display("PASS: TCNT0 wrapped correctly, now at %d", mem_rdata[7:0]);
+            $display("PASS: TCNT0 wrapped correctly, now at %d", read_byte);
         end
 
         // =====================================================================
@@ -313,7 +313,7 @@ module timer0_tb;
         repeat(10) @(posedge clk);
         
         read_reg(TIFR0_ADDR);
-        check_value("OCF0A set", mem_rdata[1], 1'b1);
+        check_value("OCF0A set", read_byte[1], 1'b1);
         check_value("IRQ compare A", irq_compa, 1'b1);
 
         // =====================================================================
@@ -332,7 +332,7 @@ module timer0_tb;
         repeat(12) @(posedge clk);
         
         read_reg(TIFR0_ADDR);
-        check_value("OCF0B set", mem_rdata[2], 1'b1);
+        check_value("OCF0B set", read_byte[2], 1'b1);
         check_value("IRQ compare B", irq_compb, 1'b1);
 
         // =====================================================================
@@ -403,7 +403,7 @@ module timer0_tb;
         
         // Check that overflow occurred at TOP=0xFF
         read_reg(TIFR0_ADDR);
-        check_value("TOV0 set in Fast PWM", mem_rdata[0], 1'b1);
+        check_value("TOV0 set in Fast PWM", read_byte[0], 1'b1);
 
         // =====================================================================
         // Test 15: Fast PWM with OCRA as TOP
@@ -422,8 +422,8 @@ module timer0_tb;
         
         // Counter should wrap at 31
         read_reg(TCNT0_ADDR);
-        if (mem_rdata[7:0] > 8'h1F) begin
-            $display("ERROR: TCNT0 should wrap at OCR0A=31, got %d", mem_rdata[7:0]);
+        if (read_byte > 8'h1F) begin
+            $display("ERROR: TCNT0 should wrap at OCR0A=31, got %d", read_byte);
             errors = errors + 1;
         end else begin
             $display("PASS: TCNT0 wrapped at OCR0A");
@@ -451,11 +451,11 @@ module timer0_tb;
         repeat(4) @(posedge clk);
         
         read_reg(TCNT0_ADDR);
-        if (mem_rdata[7:0] < 3 || mem_rdata[7:0] > 6) begin
-            $display("ERROR: TCNT0 with ext falling should be ~5, got %d", mem_rdata[7:0]);
+        if (read_byte < 3 || read_byte > 6) begin
+            $display("ERROR: TCNT0 with ext falling should be ~5, got %d", read_byte);
             errors = errors + 1;
         end else begin
-            $display("PASS: TCNT0 with ext falling = %d", mem_rdata[7:0]);
+            $display("PASS: TCNT0 with ext falling = %d", read_byte);
         end
 
         // =====================================================================
@@ -482,11 +482,11 @@ module timer0_tb;
         repeat(4) @(posedge clk);
         
         read_reg(TCNT0_ADDR);
-        if (mem_rdata[7:0] < 3 || mem_rdata[7:0] > 6) begin
-            $display("ERROR: TCNT0 with ext rising should be ~5, got %d", mem_rdata[7:0]);
+        if (read_byte < 3 || read_byte > 6) begin
+            $display("ERROR: TCNT0 with ext rising should be ~5, got %d", read_byte);
             errors = errors + 1;
         end else begin
-            $display("PASS: TCNT0 with ext rising = %d", mem_rdata[7:0]);
+            $display("PASS: TCNT0 with ext rising = %d", read_byte);
         end
 
         // =====================================================================
@@ -506,7 +506,7 @@ module timer0_tb;
         
         // Flag should be set but IRQ should be low
         read_reg(TIFR0_ADDR);
-        check_value("TOV0 flag set", mem_rdata[0], 1'b1);
+        check_value("TOV0 flag set", read_byte[0], 1'b1);
         check_value("IRQ masked", irq_ovf, 1'b0);
         
         // Enable interrupt
@@ -530,11 +530,11 @@ module timer0_tb;
         write_reg(TCNT0_ADDR, 8'hF0);
         
         read_reg(TCNT0_ADDR);
-        if (mem_rdata[7:0] < 8'hF0) begin
-            $display("ERROR: TCNT0 write while running failed, got %d", mem_rdata[7:0]);
+        if (read_byte < 8'hF0) begin
+            $display("ERROR: TCNT0 write while running failed, got %d", read_byte);
             errors = errors + 1;
         end else begin
-            $display("PASS: TCNT0 write while running = %d", mem_rdata[7:0]);
+            $display("PASS: TCNT0 write while running = %d", read_byte);
         end
 
         // =====================================================================
@@ -570,14 +570,14 @@ module timer0_tb;
         repeat(15) @(posedge clk);
         
         read_reg(TIFR0_ADDR);
-        check_value("TOV0 set", mem_rdata[0], 1'b1);
-        check_value("OCF0A set", mem_rdata[1], 1'b1);
-        check_value("OCF0B set", mem_rdata[2], 1'b1);
+        check_value("TOV0 set", read_byte[0], 1'b1);
+        check_value("OCF0A set", read_byte[1], 1'b1);
+        check_value("OCF0B set", read_byte[2], 1'b1);
         
         // Clear all flags
         write_reg(TIFR0_ADDR, 8'h07);
         read_reg(TIFR0_ADDR);
-        check_value("All flags cleared", mem_rdata[2:0], 3'b000);
+        check_value("All flags cleared", read_byte[2:0], 3'b000);
 
         // =====================================================================
         // Test 22: OC0B Output Modes
@@ -612,7 +612,7 @@ module timer0_tb;
         
         // Overflow should occur at BOTTOM in phase correct mode
         read_reg(TIFR0_ADDR);
-        check_value("TOV0 at BOTTOM", mem_rdata[0], 1'b1);
+        check_value("TOV0 at BOTTOM", read_byte[0], 1'b1);
 
         // =====================================================================
         // Test 24: Prescaler /256
@@ -628,11 +628,11 @@ module timer0_tb;
         repeat(2560) @(posedge clk);
         
         read_reg(TCNT0_ADDR);
-        if (mem_rdata[7:0] < 8 || mem_rdata[7:0] > 12) begin
-            $display("ERROR: TCNT0 with /256 should be ~10, got %d", mem_rdata[7:0]);
+        if (read_byte < 8 || read_byte > 12) begin
+            $display("ERROR: TCNT0 with /256 should be ~10, got %d", read_byte);
             errors = errors + 1;
         end else begin
-            $display("PASS: TCNT0 with /256 = %d", mem_rdata[7:0]);
+            $display("PASS: TCNT0 with /256 = %d", read_byte);
         end
 
         // =====================================================================
@@ -649,11 +649,11 @@ module timer0_tb;
         repeat(10240) @(posedge clk);
         
         read_reg(TCNT0_ADDR);
-        if (mem_rdata[7:0] < 8 || mem_rdata[7:0] > 12) begin
-            $display("ERROR: TCNT0 with /1024 should be ~10, got %d", mem_rdata[7:0]);
+        if (read_byte < 8 || read_byte > 12) begin
+            $display("ERROR: TCNT0 with /1024 should be ~10, got %d", read_byte);
             errors = errors + 1;
         end else begin
-            $display("PASS: TCNT0 with /1024 = %d", mem_rdata[7:0]);
+            $display("PASS: TCNT0 with /1024 = %d", read_byte);
         end
 
         // =====================================================================
@@ -674,7 +674,7 @@ module timer0_tb;
         
         // Check that TOV0 is NOT set (counter never reaches 0xFF)
         read_reg(TIFR0_ADDR);
-        if (mem_rdata[0] == 1'b0) begin
+        if (read_byte[0] == 1'b0) begin
             $display("PASS: TOV0 not set in CTC mode (OCR0A < 0xFF)");
         end else begin
             $display("ERROR: TOV0 should NOT be set in CTC mode when OCR0A < 0xFF");
@@ -700,7 +700,7 @@ module timer0_tb;
         
         // Check that TOV0 IS set (counter reaches 0xFF and wraps)
         read_reg(TIFR0_ADDR);
-        if (mem_rdata[0] == 1'b1) begin
+        if (read_byte[0] == 1'b1) begin
             $display("PASS: TOV0 set in CTC mode (OCR0A = 0xFF)");
         end else begin
             $display("ERROR: TOV0 should be set in CTC mode when OCR0A = 0xFF");
@@ -725,16 +725,39 @@ module timer0_tb;
     // Helper Tasks
     // =========================================================================
     
+    // Store byte lane for read_byte extraction
+    reg [1:0] last_byte_lane;
+    
+    // Read data from correct byte lane based on last accessed address
+    reg [7:0] read_byte;
+    always @(*) begin
+        case (last_byte_lane)
+            2'b00: read_byte = mem_rdata[7:0];
+            2'b01: read_byte = mem_rdata[15:8];
+            2'b10: read_byte = mem_rdata[23:16];
+            2'b11: read_byte = mem_rdata[31:24];
+        endcase
+    end
+    
     task write_reg;
         input [31:0] addr;
         input [7:0] data;
+        reg [1:0] byte_lane;
+        reg [31:0] word_addr;
         begin
+            byte_lane = addr[1:0];
+            word_addr = {addr[31:2], 2'b00};  // Word-align the address
             // Set inputs at negedge so DUT sees them at next posedge
             @(negedge clk);
             mem_valid = 1;
-            mem_addr = addr;
-            mem_wdata = {24'h0, data};
-            mem_wstrb = 4'h1;
+            mem_addr = word_addr;  // Use word-aligned address
+            // Place data in correct byte lane and set correct wstrb
+            case (byte_lane)
+                2'b00: begin mem_wdata = {24'h0, data};        mem_wstrb = 4'b0001; end
+                2'b01: begin mem_wdata = {16'h0, data, 8'h0};  mem_wstrb = 4'b0010; end
+                2'b10: begin mem_wdata = {8'h0, data, 16'h0};  mem_wstrb = 4'b0100; end
+                2'b11: begin mem_wdata = {data, 24'h0};        mem_wstrb = 4'b1000; end
+            endcase
             @(posedge clk);  // DUT samples here
             wait(mem_ready);
             @(negedge clk);
@@ -745,10 +768,13 @@ module timer0_tb;
 
     task read_reg;
         input [31:0] addr;
+        reg [31:0] word_addr;
         begin
+            last_byte_lane = addr[1:0];  // Remember byte lane for read_byte extraction
+            word_addr = {addr[31:2], 2'b00};  // Word-align the address
             @(negedge clk);
             mem_valid = 1;
-            mem_addr = addr;
+            mem_addr = word_addr;  // Use word-aligned address
             mem_wstrb = 0;
             @(posedge clk);
             wait(mem_ready);
