@@ -77,7 +77,6 @@ module timer0 (
     // PicoRV32 sends word-aligned addresses with wstrb indicating byte lane
     // =========================================================================
     wire [31:0] word_addr = {mem_addr[31:2], 2'b00};  // Word-align the address
-    wire [1:0]  byte_lane = mem_addr[1:0];            // Byte lane within word
     
     // Timer0 registers span multiple words:
     // Word 0x20000034: byte 1 = TIFR0 (0x35)
