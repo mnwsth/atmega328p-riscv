@@ -64,7 +64,6 @@ module analog_comparator (
     end
     
     // Interrupt Generation Logic
-    // Interrupt Generation Logic
     reg aci_next;
     
     always @(*) begin
