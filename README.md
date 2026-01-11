@@ -37,6 +37,13 @@ This project implements a RISC-V based System-on-Chip (SoC) that replicates the 
 - **0x2000002A**: DDRD (GPIO Port D Data Direction)
 - **0x2000002B**: PORTD (GPIO Port D Output)
 - **0x20000050**: ACSR (Analog Comparator Control/Status)
+- **0x20000035**: TIFR0 (Timer0 Interrupt Flags)
+- **0x20000044**: TCCR0A (Timer0 Control Register A)
+- **0x20000045**: TCCR0B (Timer0 Control Register B)
+- **0x20000046**: TCNT0 (Timer0 Counter)
+- **0x20000047**: OCR0A (Timer0 Output Compare A)
+- **0x20000048**: OCR0B (Timer0 Output Compare B)
+- **0x2000006E**: TIMSK0 (Timer0 Interrupt Mask)
 
 ## Building the Firmware
 
@@ -130,13 +137,16 @@ make bitstream
 - ✅ Memory system (ROM and RAM)
 - ✅ GPIO peripheral (Port B, Port C, and Port D)
 - ✅ Analog Comparator
+- ✅ Timer/Counter 0 (8-bit with PWM, prescaler, compare match)
 - ✅ Bus decoder
 - ✅ Simple blinky firmware
+- ✅ Comprehensive test suites (25 Timer0 unit tests)
 - ⏳ Full ATmega328P peripheral set (in progress)
 
 ## Next Steps
 
-- Implement timers
+- Implement Timer/Counter 1 (16-bit)
+- Implement Timer/Counter 2 (8-bit)
 - Add UART support
 - Implement ADC
 - Add interrupt controller

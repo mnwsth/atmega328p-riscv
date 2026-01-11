@@ -20,6 +20,10 @@ The simulation duration depends on which testbench and firmware you use:
 - `tb_soc_ac.v` - Tests analog comparator peripheral
 - `peripherals/analog_comparator_tb.v` - Unit test for analog comparator logic
 
+**Timer0 Testbenches:**
+- `peripherals/timer0_tb.v` - Comprehensive unit test (25 test cases)
+- `tb_soc_timer0.v` - Integration test with firmware
+
 ### Current Testbench Settings
 
 **Verilator Testbench:**
@@ -59,6 +63,16 @@ Once completed, the simulation will tell you:
 - ✅ GPIO pins change state when PORT registers are written
 - ✅ All three ports (B, C, D) operate independently
 - ✅ Word-aligned bus protocol with byte strobes works correctly
+
+### 2a. **Timer/Counter 0 Peripheral**
+- ✅ Timer0 registers accessible at ATmega328P-compatible addresses
+- ✅ Prescaler modes work correctly (1, 8, 64, 256, 1024, external)
+- ✅ Normal mode counting and overflow detection
+- ✅ CTC (Clear Timer on Compare) mode
+- ✅ Fast PWM and Phase Correct PWM modes
+- ✅ Output Compare units (OC0A, OC0B) function correctly
+- ✅ Interrupt flags (TOV0, OCF0A, OCF0B) set and clear properly
+- ✅ External clock input (T0 pin) works for falling/rising edge
 
 ### 3. **Memory System**
 - ✅ Program ROM responds to instruction fetches

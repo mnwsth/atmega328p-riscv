@@ -186,7 +186,9 @@ This document provides detailed instructions for building and testing the ATmega
 Once you have a working implementation:
 
 1. Test with the blinky program
-2. Add more peripherals (UART, timers, etc.)
-3. Optimize for your specific FPGA
-4. Add more complex firmware examples
+2. Run Timer0 unit tests: `cd testbench && make timer0_unit`
+3. Try Timer0 integration tests: `cd testbench && make timer0_sim`
+4. Add more peripherals (Timer1, Timer2, UART, etc.)
+5. Optimize for your specific FPGA
+6. Add more complex firmware examples using Timer0 for precise timing
 
