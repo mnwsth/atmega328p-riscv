@@ -14,6 +14,7 @@ RTL_SOURCES = ../rtl/core/picorv32.v \
               ../rtl/memory/rom.v \
               ../rtl/memory/ram.v \
               ../rtl/peripherals/gpio.v \
+              ../rtl/peripherals/analog_comparator.v \
               ../rtl/bus/bus_decoder.v \
               ../rtl/soc_top.v
 
