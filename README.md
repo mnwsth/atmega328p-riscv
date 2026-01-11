@@ -140,7 +140,7 @@ make bitstream
 - ✅ Timer/Counter 0 (8-bit with PWM, prescaler, compare match)
 - ✅ Bus decoder
 - ✅ Simple blinky firmware
-- ✅ Comprehensive test suites (25 Timer0 unit tests)
+- ✅ Comprehensive test suites (27 Timer0 unit tests)
 - ⏳ Full ATmega328P peripheral set (in progress)
 
 ## Next Steps
