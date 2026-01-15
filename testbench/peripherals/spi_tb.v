@@ -74,10 +74,16 @@ module spi_tb;
 
     // Loopback connection for testing (directly connect mosi to miso)
     // This is controlled per-test via miso_loopback flag
+    // When miso_loopback=1, miso follows mosi for master mode loopback testing
+    // When miso_loopback=0, miso is driven by shift_in_byte task or kept at miso_reg value
     reg miso_loopback;
+    reg miso_reg;  // Holds miso value when not in loopback mode
+    
     always @(*) begin
         if (miso_loopback)
             miso = mosi;
+        else
+            miso = miso_reg;
     end
 
     // Main test sequence
@@ -91,7 +97,7 @@ module spi_tb;
         mem_addr = 0;
         mem_wdata = 0;
         mem_wstrb = 0;
-        miso = 0;
+        miso_reg = 0;
         ss_n = 1;
         sck_in = 0;
         miso_loopback = 0;
@@ -660,7 +666,7 @@ module spi_tb;
         repeat(5) @(posedge clk);
         
         // Shift in 0xA5 (10100101) MSB first
-        miso = 0;  // Not used in this direction
+        miso_reg = 0;  // Not used in this direction
         shift_in_byte(8'hA5);
         
         // Check received data
@@ -871,7 +877,7 @@ module spi_tb;
             @(posedge clk);
             rst_n = 1;
             @(posedge clk);
-            miso = 0;
+            miso_reg = 0;
             ss_n = 1;
             sck_in = 0;
         end
@@ -900,7 +906,7 @@ module spi_tb;
         begin
             for (i = 7; i >= 0; i = i - 1) begin
                 // Drive MISO with bit (this will be sampled by slave)
-                miso = data[i];
+                miso_reg = data[i];
                 // Toggle SCK
                 sck_in = 0;
                 repeat(4) @(posedge clk);

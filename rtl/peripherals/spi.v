@@ -122,6 +122,7 @@ module spi (
     reg       sck_internal;
     
     // Prescaler divider based on SPI2X and SPR
+    // Per ATmega328P datasheet Table 18-5: SPI2X=1, SPR=11 yields fosc/64 (same as SPI2X=0, SPR=10)
     reg [6:0] prescaler_top;
     always @(*) begin
         case ({spi2x, spr})
@@ -132,7 +133,7 @@ module spi (
             3'b100: prescaler_top = 7'd0;    // fosc/2  (toggle every clock)
             3'b101: prescaler_top = 7'd3;    // fosc/8
             3'b110: prescaler_top = 7'd15;   // fosc/32
-            3'b111: prescaler_top = 7'd31;   // fosc/64
+            3'b111: prescaler_top = 7'd31;   // fosc/64 (same as 3'b010 per datasheet)
             default: prescaler_top = 7'd1;
         endcase
     end
