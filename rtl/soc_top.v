@@ -33,8 +33,19 @@ module soc_top (
     output wire        oc0a,
     output wire        oc0b,
     
+    // Timer2 output compare pins
+    output wire        oc2a,
+    output wire        oc2b,
+    
     // Watchdog Timer reset request output
-    output wire        wdt_reset_req
+    output wire        wdt_reset_req,
+    
+    // SPI pins
+    output wire        spi_sck,
+    output wire        spi_mosi,
+    input  wire        spi_miso,
+    input  wire        spi_ss_n,
+    input  wire        spi_sck_in   // External SCK input for slave mode
 );
 
     // CPU memory interface
@@ -92,6 +103,24 @@ module soc_top (
     wire        wdt_mem_ready;
     wire        wdt_irq;
     wire        wdt_reset_req_internal;
+
+    wire        timer2_mem_valid;
+    wire [31:0] timer2_mem_addr;
+    wire [31:0] timer2_mem_wdata;
+    wire [3:0]  timer2_mem_wstrb;
+    wire [31:0] timer2_mem_rdata;
+    wire        timer2_mem_ready;
+    wire        timer2_irq_ovf;
+    wire        timer2_irq_compa;
+    wire        timer2_irq_compb;
+
+    wire        spi_mem_valid;
+    wire [31:0] spi_mem_addr;
+    wire [31:0] spi_mem_wdata;
+    wire [3:0]  spi_mem_wstrb;
+    wire [31:0] spi_mem_rdata;
+    wire        spi_mem_ready;
+    wire        spi_irq;
     
     // Instantiate RISC-V core
     picorv32 #(
@@ -189,7 +218,19 @@ module soc_top (
         .wdt_mem_wdata(wdt_mem_wdata),
         .wdt_mem_wstrb(wdt_mem_wstrb),
         .wdt_mem_rdata(wdt_mem_rdata),
-        .wdt_mem_ready(wdt_mem_ready)
+        .wdt_mem_ready(wdt_mem_ready),
+        .timer2_mem_valid(timer2_mem_valid),
+        .timer2_mem_addr(timer2_mem_addr),
+        .timer2_mem_wdata(timer2_mem_wdata),
+        .timer2_mem_wstrb(timer2_mem_wstrb),
+        .timer2_mem_rdata(timer2_mem_rdata),
+        .timer2_mem_ready(timer2_mem_ready),
+        .spi_mem_valid(spi_mem_valid),
+        .spi_mem_addr(spi_mem_addr),
+        .spi_mem_wdata(spi_mem_wdata),
+        .spi_mem_wstrb(spi_mem_wstrb),
+        .spi_mem_rdata(spi_mem_rdata),
+        .spi_mem_ready(spi_mem_ready)
     );
     
     // Instantiate ROM
@@ -276,6 +317,23 @@ module soc_top (
         .irq_compb(timer0_irq_compb)
     );
 
+    // Instantiate Timer/Counter 2
+    timer2 timer2_inst (
+        .clk(clk),
+        .rst_n(rst_n),
+        .mem_valid(timer2_mem_valid),
+        .mem_addr(timer2_mem_addr),
+        .mem_wdata(timer2_mem_wdata),
+        .mem_wstrb(timer2_mem_wstrb),
+        .mem_rdata(timer2_mem_rdata),
+        .mem_ready(timer2_mem_ready),
+        .oc2a(oc2a),
+        .oc2b(oc2b),
+        .irq_ovf(timer2_irq_ovf),
+        .irq_compa(timer2_irq_compa),
+        .irq_compb(timer2_irq_compb)
+    );
+
     // Instantiate Watchdog Timer
     watchdog_timer wdt_inst (
         .clk(clk),
@@ -292,5 +350,23 @@ module soc_top (
 
     // Export WDT reset request
     assign wdt_reset_req = wdt_reset_req_internal;
+
+    // Instantiate SPI
+    spi spi_inst (
+        .clk(clk),
+        .rst_n(rst_n),
+        .mem_valid(spi_mem_valid),
+        .mem_addr(spi_mem_addr),
+        .mem_wdata(spi_mem_wdata),
+        .mem_wstrb(spi_mem_wstrb),
+        .mem_rdata(spi_mem_rdata),
+        .mem_ready(spi_mem_ready),
+        .sck(spi_sck),
+        .mosi(spi_mosi),
+        .miso(spi_miso),
+        .ss_n(spi_ss_n),
+        .sck_in(spi_sck_in),
+        .irq_spi(spi_irq)
+    );
 
 endmodule

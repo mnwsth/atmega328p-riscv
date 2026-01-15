@@ -16,7 +16,9 @@ RTL_SOURCES = ../rtl/core/picorv32.v \
               ../rtl/peripherals/gpio.v \
               ../rtl/peripherals/analog_comparator.v \
               ../rtl/peripherals/timer0.v \
+              ../rtl/peripherals/timer2.v \
               ../rtl/peripherals/watchdog_timer.v \
+              ../rtl/peripherals/spi.v \
               ../rtl/bus/bus_decoder.v \
               ../rtl/soc_top.v
 
@@ -29,7 +31,7 @@ VCD = tb_soc.vcd
 # Firmware
 FIRMWARE_MEM = firmware.mem
 
-.PHONY: all sim view clean firmware timer0_unit timer0_sim wdt_unit wdt_sim
+.PHONY: all sim view clean firmware timer0_unit timer0_sim timer2_unit timer2_sim wdt_unit wdt_sim spi_unit spi_sim
 
 all: firmware sim
 
@@ -102,6 +104,36 @@ else
 	$(VIEWER) tb_soc_timer0.vcd &
 endif
 
+# Timer2 Unit Test (standalone peripheral test)
+timer2_unit:
+	$(SIMULATOR) -o timer2_tb.vvp -I../rtl ../rtl/peripherals/timer2.v peripherals/timer2_tb.v
+	vvp timer2_tb.vvp
+
+# Timer2 Unit Test with waveform viewing
+timer2_unit_view: timer2_unit
+ifeq ($(UNAME_S),Darwin)
+	@mkdir -p /tmp/vcs_files
+	@cp timer2_tb.vcd /tmp/vcs_files/
+	@open -a NovyWave &
+else
+	$(VIEWER) timer2_tb.vcd &
+endif
+
+# Timer2 Integration Test (full SoC)
+timer2_sim:
+	$(SIMULATOR) -o tb_soc_timer2.vvp -I../rtl $(RTL_SOURCES) tb_soc_timer2.v
+	vvp tb_soc_timer2.vvp
+
+# Timer2 Integration Test with waveform viewing
+timer2_sim_view: timer2_sim
+ifeq ($(UNAME_S),Darwin)
+	@mkdir -p /tmp/vcs_files
+	@cp tb_soc_timer2.vcd /tmp/vcs_files/
+	@open -a NovyWave &
+else
+	$(VIEWER) tb_soc_timer2.vcd &
+endif
+
 # Watchdog Timer Unit Test (standalone peripheral test)
 wdt_unit:
 	$(SIMULATOR) -o watchdog_timer_tb.vvp -I../rtl ../rtl/peripherals/watchdog_timer.v peripherals/watchdog_timer_tb.v
@@ -138,7 +170,43 @@ else
 	$(VIEWER) tb_soc_wdt.vcd &
 endif
 
+# SPI Unit Test (standalone peripheral test)
+spi_unit:
+	$(SIMULATOR) -o spi_tb.vvp -I../rtl ../rtl/peripherals/spi.v peripherals/spi_tb.v
+	vvp spi_tb.vvp
+
+# SPI Unit Test with waveform viewing
+spi_unit_view: spi_unit
+ifeq ($(UNAME_S),Darwin)
+	@mkdir -p /tmp/vcs_files
+	@cp spi_tb.vcd /tmp/vcs_files/
+	@open -a NovyWave &
+else
+	$(VIEWER) spi_tb.vcd &
+endif
+
+# SPI Integration Test (full SoC with spi_test firmware)
+spi_sim: spi_firmware
+	$(SIMULATOR) -o tb_soc_spi.vvp -I../rtl $(RTL_SOURCES) tb_soc_spi.v
+	vvp tb_soc_spi.vvp
+
+# SPI test firmware
+spi_firmware:
+	@echo "Building SPI test firmware..."
+	cd ../software/firmware && make spi_test
+	cp ../software/firmware/firmware.mem .
+
+# SPI Integration Test with waveform viewing
+spi_sim_view: spi_sim
+ifeq ($(UNAME_S),Darwin)
+	@mkdir -p /tmp/vcs_files
+	@cp tb_soc_spi.vcd /tmp/vcs_files/
+	@open -a NovyWave &
+else
+	$(VIEWER) tb_soc_spi.vcd &
+endif
+
 clean:
-	rm -f $(VVP) $(VCD) $(FIRMWARE_MEM) timer0_tb.vvp timer0_tb.vcd tb_soc_timer0.vvp tb_soc_timer0.vcd watchdog_timer_tb.vvp watchdog_timer_tb.vcd tb_soc_wdt.vvp tb_soc_wdt.vcd
+	rm -f $(VVP) $(VCD) $(FIRMWARE_MEM) timer0_tb.vvp timer0_tb.vcd tb_soc_timer0.vvp tb_soc_timer0.vcd timer2_tb.vvp timer2_tb.vcd tb_soc_timer2.vvp tb_soc_timer2.vcd watchdog_timer_tb.vvp watchdog_timer_tb.vcd tb_soc_wdt.vvp tb_soc_wdt.vcd spi_tb.vvp spi_tb.vcd tb_soc_spi.vvp tb_soc_spi.vcd
 	@echo "To clean VCD files in /tmp/vcs_files, run: rm -rf /tmp/vcs_files"
 
