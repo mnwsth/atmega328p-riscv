@@ -140,6 +140,15 @@ wdt_test: wdt_test.o start.o linker.ld
 	python3 ../../software/tools/hex2mem.py $(HEX) $(MEM)
 	$(SIZE) $(ELF)
 
+# SPI test build
+spi_test: spi_test.o start.o linker.ld
+	$(CC) $(LDFLAGS) -o $(ELF) spi_test.o start.o
+	$(OBJDUMP) -d $(ELF) > $(DUMP)
+	$(OBJCOPY) -O ihex $(ELF) $(HEX)
+	$(OBJCOPY) -O binary $(ELF) $(BIN)
+	python3 ../../software/tools/hex2mem.py $(HEX) $(MEM)
+	$(SIZE) $(ELF)
+
 %.o: %.c
 	$(CC) $(CFLAGS) -c -o $@ $<
 

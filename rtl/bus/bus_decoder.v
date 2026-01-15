@@ -55,7 +55,23 @@ module bus_decoder (
     output reg  [31:0] wdt_mem_wdata,
     output reg  [3:0]  wdt_mem_wstrb,
     input  wire [31:0] wdt_mem_rdata,
-    input  wire        wdt_mem_ready
+    input  wire        wdt_mem_ready,
+
+    // Timer2 interface
+    output reg         timer2_mem_valid,
+    output reg  [31:0] timer2_mem_addr,
+    output reg  [31:0] timer2_mem_wdata,
+    output reg  [3:0]  timer2_mem_wstrb,
+    input  wire [31:0] timer2_mem_rdata,
+    input  wire        timer2_mem_ready,
+
+    // SPI interface
+    output reg         spi_mem_valid,
+    output reg  [31:0] spi_mem_addr,
+    output reg  [31:0] spi_mem_wdata,
+    output reg  [3:0]  spi_mem_wstrb,
+    input  wire [31:0] spi_mem_rdata,
+    input  wire        spi_mem_ready
 );
 
     // Address decoding
@@ -79,8 +95,20 @@ module bus_decoder (
     wire wdt_sel = (word_addr == 32'h20000054) ||     // MCUSR
                    (word_addr == 32'h20000060);       // WDTCSR, WDR
     
+    // Timer2 word-aligned selection (Timer2 spans multiple words)
+    // Note: TIFR2 (0x37) is in word 0x34, but we need separate handling 
+    // to avoid conflict with TIFR0 (0x35) which is in same word
+    wire timer2_sel = (word_addr == 32'h20000034) ||  // TIFR2 (byte 3)
+                      (word_addr == 32'h20000070) ||  // TIMSK2
+                      (word_addr == 32'h200000B0) ||  // TCCR2A, TCCR2B, TCNT2, OCR2A
+                      (word_addr == 32'h200000B4);    // OCR2B
+    
+    // SPI word-aligned selection
+    // SPI registers: SPCR (0x4C), SPSR (0x4D), SPDR (0x4E) all in word 0x4C
+    wire spi_sel = (word_addr == 32'h2000004C);
+    
     // GPIO is default for other IO addresses
-    wire gpio_sel = io_sel && !ac_sel && !timer0_sel && !wdt_sel;
+    wire gpio_sel = io_sel && !ac_sel && !timer0_sel && !wdt_sel && !timer2_sel && !spi_sel;
     
     // Address calculation (convert byte address to word address)
     wire [15:0] rom_word_addr = cpu_mem_addr[15:2];  // 64KB = 16K words (bits 15:2)
@@ -169,8 +197,42 @@ module bus_decoder (
             wdt_mem_wstrb = cpu_mem_wstrb;
         end
     end
+
+    // Timer2 interface
+    always @(*) begin
+        timer2_mem_valid = 1'b0;
+        timer2_mem_addr = 32'h00000000;
+        timer2_mem_wdata = 32'h00000000;
+        timer2_mem_wstrb = 4'h0;
+        
+        if (cpu_mem_valid && timer2_sel) begin
+            timer2_mem_valid = 1'b1;
+            timer2_mem_addr = cpu_mem_addr;
+            timer2_mem_wdata = cpu_mem_wdata;
+            timer2_mem_wstrb = cpu_mem_wstrb;
+        end
+    end
+
+    // SPI interface
+    always @(*) begin
+        spi_mem_valid = 1'b0;
+        spi_mem_addr = 32'h00000000;
+        spi_mem_wdata = 32'h00000000;
+        spi_mem_wstrb = 4'h0;
+        
+        if (cpu_mem_valid && spi_sel) begin
+            spi_mem_valid = 1'b1;
+            spi_mem_addr = cpu_mem_addr;
+            spi_mem_wdata = cpu_mem_wdata;
+            spi_mem_wstrb = cpu_mem_wstrb;
+        end
+    end
     
     // Read data mux
+    // Note: For word 0x20000034, both Timer0 (TIFR0 @ byte 1) and Timer2 (TIFR2 @ byte 3)
+    // share the same word. We merge their responses.
+    wire shared_word_34 = (word_addr == 32'h20000034);
+    
     always @(*) begin
         cpu_mem_rdata = 32'h00000000;
         cpu_mem_ready = 1'b0;
@@ -187,12 +249,24 @@ module bus_decoder (
         end else if (ac_sel) begin
             cpu_mem_rdata = ac_mem_rdata;
             cpu_mem_ready = ac_mem_ready;
+        end else if (shared_word_34) begin
+            // Merge Timer0 and Timer2 responses for shared word 0x34
+            // Timer0 provides byte 1 (TIFR0), Timer2 provides byte 3 (TIFR2)
+            // Use && to wait for both peripherals to have valid data before asserting ready
+            cpu_mem_rdata = timer0_mem_rdata | timer2_mem_rdata;
+            cpu_mem_ready = timer0_mem_ready && timer2_mem_ready;
         end else if (timer0_sel) begin
             cpu_mem_rdata = timer0_mem_rdata;
             cpu_mem_ready = timer0_mem_ready;
+        end else if (timer2_sel) begin
+            cpu_mem_rdata = timer2_mem_rdata;
+            cpu_mem_ready = timer2_mem_ready;
         end else if (wdt_sel) begin
             cpu_mem_rdata = wdt_mem_rdata;
             cpu_mem_ready = wdt_mem_ready;
+        end else if (spi_sel) begin
+            cpu_mem_rdata = spi_mem_rdata;
+            cpu_mem_ready = spi_mem_ready;
         end
     end
 

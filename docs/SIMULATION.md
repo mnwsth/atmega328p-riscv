@@ -12,6 +12,7 @@ The simulation duration depends on which testbench and firmware you use:
 - Supports both Verilator and Icarus Verilog
 
 **GPIO Testbenches:**
+- `tb_gpio_portb.v` - Dedicated test for GPIO Port B
 - `tb_gpio_portc.v` - Dedicated test for GPIO Port C
 - `tb_gpio_portd.v` - Dedicated test for GPIO Port D
 - `tb_soc_input.v` - Tests GPIO input functionality
@@ -24,9 +25,17 @@ The simulation duration depends on which testbench and firmware you use:
 - `peripherals/timer0_tb.v` - Comprehensive unit test (27 test cases)
 - `tb_soc_timer0.v` - Integration test with firmware
 
+**Timer2 Testbenches:**
+- `peripherals/timer2_tb.v` - Comprehensive unit test (33 test cases)
+- `tb_soc_timer2.v` - Integration test with firmware
+
 **Watchdog Timer Testbenches:**
 - `peripherals/watchdog_timer_tb.v` - Comprehensive unit test (26 test cases)
 - `tb_soc_wdt.v` - Integration test with firmware
+
+**SPI Testbenches:**
+- `peripherals/spi_tb.v` - Comprehensive unit test (33 test cases)
+- `tb_soc_spi.v` - Integration test with firmware
 
 ### Current Testbench Settings
 
@@ -78,7 +87,16 @@ Once completed, the simulation will tell you:
 - ✅ Interrupt flags (TOV0, OCF0A, OCF0B) set and clear properly
 - ✅ External clock input (T0 pin) works for falling/rising edge
 
-### 2b. **Watchdog Timer Peripheral**
+### 2b. **Timer/Counter 2 Peripheral**
+- ✅ Timer2 registers accessible at ATmega328P-compatible addresses
+- ✅ Timer2-specific prescaler modes work correctly (1, 8, 32, 64, 128, 256, 1024)
+- ✅ Normal mode counting and overflow detection
+- ✅ CTC (Clear Timer on Compare) mode
+- ✅ Fast PWM and Phase Correct PWM modes
+- ✅ Output Compare units (OC2A, OC2B) function correctly
+- ✅ Interrupt flags (TOV2, OCF2A, OCF2B) set and clear properly
+
+### 2c. **Watchdog Timer Peripheral**
 - ✅ MCUSR and WDTCSR registers accessible at ATmega328P-compatible addresses
 - ✅ Simulated 128kHz oscillator via clock divider
 - ✅ All 8 prescaler settings work correctly (16ms to 8s timeouts)
@@ -89,6 +107,17 @@ Once completed, the simulation will tell you:
 - ✅ Timed sequence for safe WDE/WDP changes
 - ✅ WDCE auto-clears after 32 cycles
 - ✅ WDIF flag is write-1-to-clear
+
+### 2d. **SPI Peripheral**
+- ✅ SPI registers accessible at ATmega328P-compatible addresses (SPCR, SPSR, SPDR)
+- ✅ Master mode with all 8 clock rate options
+- ✅ All 4 SPI modes (CPOL/CPHA combinations) work correctly
+- ✅ MSB first and LSB first data order
+- ✅ SPIF flag set on transfer complete
+- ✅ WCOL flag set on write collision
+- ✅ Slave mode with proper SS_n control
+- ✅ Slave receives on MOSI, transmits on MISO (correct SPI convention)
+- ✅ Interrupt generation when SPIE enabled
 
 ### 3. **Memory System**
 - ✅ Program ROM responds to instruction fetches

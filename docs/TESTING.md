@@ -7,19 +7,23 @@ This document provides comprehensive documentation of all tests available in the
 | Category | Testbench | Tests | Status |
 |----------|-----------|-------|--------|
 | Timer0 | `peripherals/timer0_tb.v` | 27 | ✅ All Pass |
+| Timer2 | `peripherals/timer2_tb.v` | 33 | ✅ All Pass |
 | Watchdog Timer | `peripherals/watchdog_timer_tb.v` | 26 | ✅ All Pass |
+| SPI | `peripherals/spi_tb.v` | 33 | ✅ All Pass |
 | Analog Comparator | `peripherals/analog_comparator_tb.v` | 11 | ✅ All Pass |
 | GPIO Port B | `tb_gpio_portb.v` | 10 | ✅ All Pass |
 | GPIO Port C | `tb_gpio_portc.v` | 10 | ✅ All Pass |
 | GPIO Port D | `tb_gpio_portd.v` | 10 | ✅ All Pass |
 | Bus Decoder | `tb_bus_decoder.v` | 10 | ✅ All Pass |
 | RAM | `tb_ram.v` | 10 | ✅ All Pass |
-| **Total Unit Tests** | | **114** | ✅ |
+| **Total Unit Tests** | | **180** | ✅ |
 
 | Integration Test | Testbench | Status |
 |-----------------|-----------|--------|
 | WDT SoC | `tb_soc_wdt.v` | ✅ Pass (0xAA) |
 | Timer0 SoC | `tb_soc_timer0.v` | ✅ Pass (8 stages) |
+| Timer2 SoC | `tb_soc_timer2.v` | ✅ Pass (10 stages) |
+| SPI SoC | `tb_soc_spi.v` | ✅ Pass (8 stages) |
 | Main SoC | `tb_soc.v` | ✅ Pass |
 
 ---
@@ -44,6 +48,8 @@ The project includes multiple testbenches to verify different aspects of the SoC
 | `tb_soc_timer0.v` | Integration Test | Icarus Verilog | Timer0 SoC integration |
 | `peripherals/watchdog_timer_tb.v` | Unit Test | Icarus Verilog | Watchdog Timer peripheral (26 tests) |
 | `tb_soc_wdt.v` | Integration Test | Icarus Verilog | Watchdog Timer SoC integration |
+| `peripherals/spi_tb.v` | Unit Test | Icarus Verilog | SPI peripheral (33 tests) |
+| `tb_soc_spi.v` | Integration Test | Icarus Verilog | SPI SoC integration |
 
 ---
 
@@ -660,6 +666,135 @@ RESULT: PASSED
 
 ---
 
+### 13. Timer2 Unit Test (`peripherals/timer2_tb.v`)
+
+**Location:** `testbench/peripherals/timer2_tb.v`
+
+**Purpose:** Comprehensive unit testing of the Timer/Counter 2 peripheral.
+
+**Test Cases (33 tests):**
+
+| Test # | Description | Verification |
+|--------|-------------|--------------|
+| 1 | Reset Values | All registers = 0x00 after reset |
+| 2-3 | Register Read/Write | TCCR2A, TCCR2B, TCNT2, OCR2A/B, TIMSK2 |
+| 4 | Timer Stopped (CS=000) | TCNT2 doesn't increment |
+| 5 | Normal Mode, Prescaler /1 | TCNT2 counts at clock rate |
+| 6 | Normal Mode Overflow | TOV2 flag set at 0xFF→0x00 |
+| 7-12 | Prescaler Options | /8, /32, /64, /128, /256, /1024 |
+| 13-16 | CTC Mode | Counter clears at OCR2A match |
+| 17-20 | Compare Match A/B | OCF2A/OCF2B flags and IRQ |
+| 21-24 | OC2A/OC2B Modes | Toggle, Clear, Set on compare |
+| 25-28 | Fast PWM Mode | TOV2 at TOP, PWM output |
+| 29-31 | Phase Correct PWM | TOV2 at BOTTOM |
+| 32-33 | Force Output Compare | FOC2A/FOC2B functionality |
+
+**How to Run:**
+```bash
+cd testbench
+make timer2_unit
+```
+
+**Expected Output:**
+```
+=== Test 1: Reset Values ===
+PASS: TCCR2A reset = 00000000
+PASS: TCCR2B reset = 00000000
+...
+========================================
+Test Summary: 33 tests, 0 errors
+ALL TESTS PASSED!
+========================================
+```
+
+---
+
+### 14. SPI Unit Test (`peripherals/spi_tb.v`)
+
+**Location:** `testbench/peripherals/spi_tb.v`
+
+**Purpose:** Comprehensive unit testing of the SPI peripheral.
+
+**Test Cases (33 tests):**
+
+| Test # | Description | Checks |
+|--------|-------------|--------|
+| 1 | Reset Values | SPCR, SPSR, SPDR = 0x00 |
+| 2 | SPCR Read/Write | All bits writable |
+| 3 | SPSR Read-Only Bits | SPIF, WCOL are read-only |
+| 4 | SPSR Writable Bits | SPI2X is writable |
+| 5 | SPDR Read/Write | Data register access |
+| 6-13 | Clock Rates | All 8 prescaler options (/2, /4, /8, /16, /32, /64, /128) |
+| 14-17 | SPI Modes | Mode 0-3 (CPOL/CPHA combinations) |
+| 18-19 | Data Order | MSB first and LSB first |
+| 20-25 | Transfer Operations | Single/multi-byte, SPIF flag, loopback |
+| 26-30 | Slave Mode | Enable, SS_n control, data transfer |
+| 31-33 | Interrupts | IRQ enable, mask, clear |
+
+**How to Run:**
+```bash
+cd testbench
+make spi_unit
+```
+
+**Expected Output:**
+```
+=== Test 1: Reset Values ===
+PASS: SPCR reset = 00000000
+PASS: SPSR reset = 00000000
+PASS: SPDR reset = 00000000
+...
+========================================
+Test Summary: 33 tests, 0 errors
+ALL TESTS PASSED!
+========================================
+```
+
+---
+
+### 15. SPI Integration Test (`tb_soc_spi.v`)
+
+**Location:** `testbench/tb_soc_spi.v`
+
+**Purpose:** Tests SPI integration with the full SoC using test firmware.
+
+**What it Tests:**
+- SPI register access from CPU
+- Master mode transfers with loopback
+- SPIF flag detection
+- Multi-byte transfers
+- Different clock rates
+
+**Requirements:**
+- Requires `spi_test.c` firmware compiled and loaded
+
+**How to Run:**
+```bash
+cd testbench
+make spi_sim
+```
+
+**Expected Output:**
+```
+===========================================
+SPI Integration Test Started
+===========================================
+Time 100000: Reset released
+Time 5755000: TEST 0 PASSED - Register access
+Time 6955000: TEST 1 PASSED - Master mode enable
+Time 8915000: TEST 2 PASSED - Single byte transfer
+Time 11725000: TEST 3 PASSED - SPIF flag detection
+Time 13725000: TEST 4 PASSED - Loopback verify
+Time 17895000: TEST 5 PASSED - Multi-byte transfer
+Time 22095000: TEST 6 PASSED - Clock rate change
+Time 22535000: TEST 7 PASSED - All tests complete!
+
+*** ALL TESTS PASSED! ***
+===========================================
+```
+
+---
+
 ## Test File Structure
 
 ```
@@ -675,12 +810,15 @@ testbench/
 ├── tb_soc_ac.v                   # Analog Comparator integration test
 ├── tb_soc_timer0.v               # Timer0 integration test
 ├── tb_soc_wdt.v                  # Watchdog Timer integration test
+├── tb_soc_spi.v                  # SPI integration test
 ├── tb_bus_decoder.v              # Bus decoder unit tests
 ├── tb_ram.v                      # RAM unit tests
 ├── peripherals/
 │   ├── analog_comparator_tb.v    # Analog Comparator unit test
 │   ├── timer0_tb.v               # Timer0 unit test (27 tests)
-│   └── watchdog_timer_tb.v       # Watchdog Timer unit test (26 tests)
+│   ├── timer2_tb.v               # Timer2 unit test (33 tests)
+│   ├── watchdog_timer_tb.v       # Watchdog Timer unit test (26 tests)
+│   └── spi_tb.v                  # SPI unit test (33 tests)
 └── obj_dir/                      # Verilator build output
 ```
 
@@ -709,9 +847,19 @@ Tests use the following memory-mapped register addresses:
 | 0x20000048 | OCR0B | Timer0 Output Compare B |
 | 0x20000050 | ACSR | Analog Comparator Control/Status |
 | 0x2000006E | TIMSK0 | Timer0 Interrupt Mask Register |
+| 0x2000004C | SPCR | SPI Control Register |
+| 0x2000004D | SPSR | SPI Status Register |
+| 0x2000004E | SPDR | SPI Data Register |
 | 0x20000054 | MCUSR | MCU Status Register (WDRF bit) |
 | 0x20000060 | WDTCSR | Watchdog Timer Control/Status |
 | 0x20000061 | WDR | Watchdog Reset (write 0xA5) |
+| 0x20000037 | TIFR2 | Timer2 Interrupt Flag Register |
+| 0x20000070 | TIMSK2 | Timer2 Interrupt Mask Register |
+| 0x200000B0 | TCCR2A | Timer2 Control Register A |
+| 0x200000B1 | TCCR2B | Timer2 Control Register B |
+| 0x200000B2 | TCNT2 | Timer2 Counter Register |
+| 0x200000B3 | OCR2A | Timer2 Output Compare A |
+| 0x200000B4 | OCR2B | Timer2 Output Compare B |
 
 ---
 

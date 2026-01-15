@@ -12,9 +12,20 @@ Vsoc_top::Vsoc_top(VerilatedContext* _vcontextp__, const char* _vcname__)
     , vlSymsp{new Vsoc_top__Syms(contextp(), _vcname__, this)}
     , clk{vlSymsp->TOP.clk}
     , rst_n{vlSymsp->TOP.rst_n}
-    , gpio_pin_in{vlSymsp->TOP.gpio_pin_in}
-    , gpio_pin_out{vlSymsp->TOP.gpio_pin_out}
-    , gpio_pin_dir{vlSymsp->TOP.gpio_pin_dir}
+    , gpio_pin_in_b{vlSymsp->TOP.gpio_pin_in_b}
+    , gpio_pin_out_b{vlSymsp->TOP.gpio_pin_out_b}
+    , gpio_pin_dir_b{vlSymsp->TOP.gpio_pin_dir_b}
+    , gpio_pin_in_d{vlSymsp->TOP.gpio_pin_in_d}
+    , gpio_pin_out_d{vlSymsp->TOP.gpio_pin_out_d}
+    , gpio_pin_dir_d{vlSymsp->TOP.gpio_pin_dir_d}
+    , gpio_pin_in_c{vlSymsp->TOP.gpio_pin_in_c}
+    , gpio_pin_out_c{vlSymsp->TOP.gpio_pin_out_c}
+    , gpio_pin_dir_c{vlSymsp->TOP.gpio_pin_dir_c}
+    , ain0{vlSymsp->TOP.ain0}
+    , ain1{vlSymsp->TOP.ain1}
+    , t0_pin{vlSymsp->TOP.t0_pin}
+    , oc0a{vlSymsp->TOP.oc0a}
+    , oc0b{vlSymsp->TOP.oc0b}
     , rootp{&(vlSymsp->TOP)}
 {
     // Register model with the context

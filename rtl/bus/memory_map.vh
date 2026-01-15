@@ -48,3 +48,17 @@
 `define WDT_WDTCSR      32'h20000060  // Watchdog Timer Control and Status Register
 `define WDT_WDR         32'h20000061  // Watchdog Reset (write 0xA5 to reset counter)
 
+// Timer/Counter 2 Registers (matching ATmega328P addresses)
+`define TIMER2_TIFR2    32'h20000037  // Timer Interrupt Flag Register
+`define TIMER2_TIMSK2   32'h20000070  // Timer Interrupt Mask Register
+`define TIMER2_TCCR2A   32'h200000B0  // Timer Control Register A
+`define TIMER2_TCCR2B   32'h200000B1  // Timer Control Register B
+`define TIMER2_TCNT2    32'h200000B2  // Timer Counter Register
+`define TIMER2_OCR2A    32'h200000B3  // Output Compare Register A
+`define TIMER2_OCR2B    32'h200000B4  // Output Compare Register B
+
+// SPI Registers (matching ATmega328P addresses)
+`define SPI_SPCR        32'h2000004C  // SPI Control Register
+`define SPI_SPSR        32'h2000004D  // SPI Status Register
+`define SPI_SPDR        32'h2000004E  // SPI Data Register
+
