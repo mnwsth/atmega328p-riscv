@@ -700,66 +700,6 @@ PASS: SPCR reset = 00000000
 PASS: SPSR reset = 00000000
 PASS: SPDR reset = 00000000
 ...
-========================================
-Test Summary: 33 tests, 0 errors
-ALL TESTS PASSED!
-========================================
-```
-
----
-
-### 14. SPI Integration Test (`tb_soc_spi.v`)
-
-**Location:** `testbench/tb_soc_spi.v`
-
-**Purpose:** Tests SPI integration with the full SoC using test firmware.
-
-**What it Tests:**
-- SPI register access from CPU
-- Master mode transfer with loopback
-- SPIF flag detection
-- Multi-byte transfer
-- Clock rate changes
-
-**Requirements:**
-- Requires `spi_test.c` firmware compiled and loaded
-
-**How to Run:**
-```bash
-cd testbench
-make spi_sim
-```
-
-**Expected Output:**
-```
-===========================================
-SPI Integration Test Started
-===========================================
-Time 100000: Reset released
-Time 5755000: TEST 0 PASSED - Register access
-Time 6955000: TEST 1 PASSED - Master mode enable
-Time 8915000: TEST 2 PASSED - Single byte transfer
-Time 11725000: TEST 3 PASSED - SPIF flag detection
-Time 13725000: TEST 4 PASSED - Loopback verify
-Time 17895000: TEST 5 PASSED - Multi-byte transfer
-Time 22095000: TEST 6 PASSED - Clock rate change
-Time 22535000: TEST 7 PASSED - All tests complete!
-...
-*** ALL TESTS PASSED! ***
-```
-
-**GPIO_B Test Stage Indicators:**
-- 0x01: Register access OK
-- 0x02: Master mode enabled
-- 0x04: Single byte transfer complete
-- 0x08: SPIF flag works
-- 0x10: Loopback data correct
-- 0x20: Multi-byte transfer works
-- 0x40: Clock rate change works
-- 0xFF: All tests passed
-
----
-
 ## Test File Structure
 
 ```
