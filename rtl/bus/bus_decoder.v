@@ -252,8 +252,9 @@ module bus_decoder (
         end else if (shared_word_34) begin
             // Merge Timer0 and Timer2 responses for shared word 0x34
             // Timer0 provides byte 1 (TIFR0), Timer2 provides byte 3 (TIFR2)
+            // Use && to wait for both peripherals to have valid data before asserting ready
             cpu_mem_rdata = timer0_mem_rdata | timer2_mem_rdata;
-            cpu_mem_ready = timer0_mem_ready || timer2_mem_ready;
+            cpu_mem_ready = timer0_mem_ready && timer2_mem_ready;
         end else if (timer0_sel) begin
             cpu_mem_rdata = timer0_mem_rdata;
             cpu_mem_ready = timer0_mem_ready;
