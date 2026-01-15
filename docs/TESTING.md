@@ -22,6 +22,7 @@ This document provides comprehensive documentation of all tests available in the
 |-----------------|-----------|--------|
 | WDT SoC | `tb_soc_wdt.v` | ✅ Pass (0xAA) |
 | Timer0 SoC | `tb_soc_timer0.v` | ✅ Pass (8 stages) |
+| Timer2 SoC | `tb_soc_timer2.v` | ✅ Pass (10 stages) |
 | SPI SoC | `tb_soc_spi.v` | ✅ Pass (8 stages) |
 | Main SoC | `tb_soc.v` | ✅ Pass |
 
@@ -665,7 +666,50 @@ RESULT: PASSED
 
 ---
 
-### 13. SPI Unit Test (`peripherals/spi_tb.v`)
+### 13. Timer2 Unit Test (`peripherals/timer2_tb.v`)
+
+**Location:** `testbench/peripherals/timer2_tb.v`
+
+**Purpose:** Comprehensive unit testing of the Timer/Counter 2 peripheral.
+
+**Test Cases (33 tests):**
+
+| Test # | Description | Verification |
+|--------|-------------|--------------|
+| 1 | Reset Values | All registers = 0x00 after reset |
+| 2-3 | Register Read/Write | TCCR2A, TCCR2B, TCNT2, OCR2A/B, TIMSK2 |
+| 4 | Timer Stopped (CS=000) | TCNT2 doesn't increment |
+| 5 | Normal Mode, Prescaler /1 | TCNT2 counts at clock rate |
+| 6 | Normal Mode Overflow | TOV2 flag set at 0xFF→0x00 |
+| 7-12 | Prescaler Options | /8, /32, /64, /128, /256, /1024 |
+| 13-16 | CTC Mode | Counter clears at OCR2A match |
+| 17-20 | Compare Match A/B | OCF2A/OCF2B flags and IRQ |
+| 21-24 | OC2A/OC2B Modes | Toggle, Clear, Set on compare |
+| 25-28 | Fast PWM Mode | TOV2 at TOP, PWM output |
+| 29-31 | Phase Correct PWM | TOV2 at BOTTOM |
+| 32-33 | Force Output Compare | FOC2A/FOC2B functionality |
+
+**How to Run:**
+```bash
+cd testbench
+make timer2_unit
+```
+
+**Expected Output:**
+```
+=== Test 1: Reset Values ===
+PASS: TCCR2A reset = 00000000
+PASS: TCCR2B reset = 00000000
+...
+========================================
+Test Summary: 33 tests, 0 errors
+ALL TESTS PASSED!
+========================================
+```
+
+---
+
+### 14. SPI Unit Test (`peripherals/spi_tb.v`)
 
 **Location:** `testbench/peripherals/spi_tb.v`
 
@@ -700,6 +744,57 @@ PASS: SPCR reset = 00000000
 PASS: SPSR reset = 00000000
 PASS: SPDR reset = 00000000
 ...
+========================================
+Test Summary: 33 tests, 0 errors
+ALL TESTS PASSED!
+========================================
+```
+
+---
+
+### 15. SPI Integration Test (`tb_soc_spi.v`)
+
+**Location:** `testbench/tb_soc_spi.v`
+
+**Purpose:** Tests SPI integration with the full SoC using test firmware.
+
+**What it Tests:**
+- SPI register access from CPU
+- Master mode transfers with loopback
+- SPIF flag detection
+- Multi-byte transfers
+- Different clock rates
+
+**Requirements:**
+- Requires `spi_test.c` firmware compiled and loaded
+
+**How to Run:**
+```bash
+cd testbench
+make spi_sim
+```
+
+**Expected Output:**
+```
+===========================================
+SPI Integration Test Started
+===========================================
+Time 100000: Reset released
+Time 5755000: TEST 0 PASSED - Register access
+Time 6955000: TEST 1 PASSED - Master mode enable
+Time 8915000: TEST 2 PASSED - Single byte transfer
+Time 11725000: TEST 3 PASSED - SPIF flag detection
+Time 13725000: TEST 4 PASSED - Loopback verify
+Time 17895000: TEST 5 PASSED - Multi-byte transfer
+Time 22095000: TEST 6 PASSED - Clock rate change
+Time 22535000: TEST 7 PASSED - All tests complete!
+
+*** ALL TESTS PASSED! ***
+===========================================
+```
+
+---
+
 ## Test File Structure
 
 ```
@@ -758,6 +853,13 @@ Tests use the following memory-mapped register addresses:
 | 0x20000054 | MCUSR | MCU Status Register (WDRF bit) |
 | 0x20000060 | WDTCSR | Watchdog Timer Control/Status |
 | 0x20000061 | WDR | Watchdog Reset (write 0xA5) |
+| 0x20000037 | TIFR2 | Timer2 Interrupt Flag Register |
+| 0x20000070 | TIMSK2 | Timer2 Interrupt Mask Register |
+| 0x200000B0 | TCCR2A | Timer2 Control Register A |
+| 0x200000B1 | TCCR2B | Timer2 Control Register B |
+| 0x200000B2 | TCNT2 | Timer2 Counter Register |
+| 0x200000B3 | OCR2A | Timer2 Output Compare A |
+| 0x200000B4 | OCR2B | Timer2 Output Compare B |
 
 ---
 

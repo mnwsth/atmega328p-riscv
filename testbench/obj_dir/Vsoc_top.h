@@ -31,9 +31,20 @@ class alignas(VL_CACHE_LINE_BYTES) Vsoc_top VL_NOT_FINAL : public VerilatedModel
     // propagate new values into/out from the Verilated model.
     VL_IN8(&clk,0,0);
     VL_IN8(&rst_n,0,0);
-    VL_IN8(&gpio_pin_in,7,0);
-    VL_OUT8(&gpio_pin_out,7,0);
-    VL_OUT8(&gpio_pin_dir,7,0);
+    VL_IN8(&gpio_pin_in_b,7,0);
+    VL_OUT8(&gpio_pin_out_b,7,0);
+    VL_OUT8(&gpio_pin_dir_b,7,0);
+    VL_IN8(&gpio_pin_in_d,7,0);
+    VL_OUT8(&gpio_pin_out_d,7,0);
+    VL_OUT8(&gpio_pin_dir_d,7,0);
+    VL_IN8(&gpio_pin_in_c,7,0);
+    VL_OUT8(&gpio_pin_out_c,7,0);
+    VL_OUT8(&gpio_pin_dir_c,7,0);
+    VL_IN8(&ain0,0,0);
+    VL_IN8(&ain1,0,0);
+    VL_IN8(&t0_pin,0,0);
+    VL_OUT8(&oc0a,0,0);
+    VL_OUT8(&oc0b,0,0);
 
     // CELLS
     // Public to allow access to /* verilator public */ items.

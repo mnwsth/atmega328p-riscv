@@ -18,9 +18,20 @@ class alignas(VL_CACHE_LINE_BYTES) Vsoc_top___024root final : public VerilatedMo
     struct {
         VL_IN8(clk,0,0);
         VL_IN8(rst_n,0,0);
-        VL_IN8(gpio_pin_in,7,0);
-        VL_OUT8(gpio_pin_out,7,0);
-        VL_OUT8(gpio_pin_dir,7,0);
+        VL_IN8(gpio_pin_in_b,7,0);
+        VL_OUT8(gpio_pin_out_b,7,0);
+        VL_OUT8(gpio_pin_dir_b,7,0);
+        VL_IN8(gpio_pin_in_d,7,0);
+        VL_OUT8(gpio_pin_out_d,7,0);
+        VL_OUT8(gpio_pin_dir_d,7,0);
+        VL_IN8(gpio_pin_in_c,7,0);
+        VL_OUT8(gpio_pin_out_c,7,0);
+        VL_OUT8(gpio_pin_dir_c,7,0);
+        VL_IN8(ain0,0,0);
+        VL_IN8(ain1,0,0);
+        VL_IN8(t0_pin,0,0);
+        VL_OUT8(oc0a,0,0);
+        VL_OUT8(oc0b,0,0);
         CData/*0:0*/ soc_top__DOT__cpu_mem_valid;
         CData/*0:0*/ soc_top__DOT__cpu_mem_instr;
         CData/*0:0*/ soc_top__DOT__cpu_mem_ready;
@@ -29,6 +40,8 @@ class alignas(VL_CACHE_LINE_BYTES) Vsoc_top___024root final : public VerilatedMo
         CData/*0:0*/ soc_top__DOT__rom_rdata_valid;
         CData/*0:0*/ soc_top__DOT__ram_rdata_valid;
         CData/*0:0*/ soc_top__DOT__gpio_mem_ready;
+        CData/*0:0*/ soc_top__DOT__ac_mem_ready;
+        CData/*0:0*/ soc_top__DOT__timer0_mem_ready;
         CData/*0:0*/ soc_top__DOT__cpu__DOT__mem_la_read;
         CData/*0:0*/ soc_top__DOT__cpu__DOT__mem_la_write;
         CData/*3:0*/ soc_top__DOT__cpu__DOT__mem_la_wstrb;
@@ -67,6 +80,8 @@ class alignas(VL_CACHE_LINE_BYTES) Vsoc_top___024root final : public VerilatedMo
         CData/*0:0*/ soc_top__DOT__cpu__DOT__instr_lhu;
         CData/*0:0*/ soc_top__DOT__cpu__DOT__instr_sb;
         CData/*0:0*/ soc_top__DOT__cpu__DOT__instr_sh;
+    };
+    struct {
         CData/*0:0*/ soc_top__DOT__cpu__DOT__instr_sw;
         CData/*0:0*/ soc_top__DOT__cpu__DOT__instr_addi;
         CData/*0:0*/ soc_top__DOT__cpu__DOT__instr_slti;
@@ -80,8 +95,6 @@ class alignas(VL_CACHE_LINE_BYTES) Vsoc_top___024root final : public VerilatedMo
         CData/*0:0*/ soc_top__DOT__cpu__DOT__instr_add;
         CData/*0:0*/ soc_top__DOT__cpu__DOT__instr_sub;
         CData/*0:0*/ soc_top__DOT__cpu__DOT__instr_sll;
-    };
-    struct {
         CData/*0:0*/ soc_top__DOT__cpu__DOT__instr_slt;
         CData/*0:0*/ soc_top__DOT__cpu__DOT__instr_sltu;
         CData/*0:0*/ soc_top__DOT__cpu__DOT__instr_xor;
@@ -133,6 +146,8 @@ class alignas(VL_CACHE_LINE_BYTES) Vsoc_top___024root final : public VerilatedMo
         CData/*4:0*/ soc_top__DOT__cpu__DOT__q_insn_rs2;
         CData/*4:0*/ soc_top__DOT__cpu__DOT__q_insn_rd;
         CData/*0:0*/ soc_top__DOT__cpu__DOT__dbg_next;
+    };
+    struct {
         CData/*0:0*/ soc_top__DOT__cpu__DOT__launch_next_insn;
         CData/*0:0*/ soc_top__DOT__cpu__DOT__dbg_valid_insn;
         CData/*4:0*/ soc_top__DOT__cpu__DOT__cached_insn_rs1;
@@ -146,8 +161,6 @@ class alignas(VL_CACHE_LINE_BYTES) Vsoc_top___024root final : public VerilatedMo
         CData/*0:0*/ soc_top__DOT__cpu__DOT__latched_store;
         CData/*0:0*/ soc_top__DOT__cpu__DOT__latched_stalu;
         CData/*0:0*/ soc_top__DOT__cpu__DOT__latched_branch;
-    };
-    struct {
         CData/*0:0*/ soc_top__DOT__cpu__DOT__latched_compr;
         CData/*0:0*/ soc_top__DOT__cpu__DOT__latched_trace;
         CData/*0:0*/ soc_top__DOT__cpu__DOT__latched_is_lu;
@@ -167,6 +180,8 @@ class alignas(VL_CACHE_LINE_BYTES) Vsoc_top___024root final : public VerilatedMo
         CData/*0:0*/ soc_top__DOT__cpu__DOT__clear_prefetched_high_word_q;
         CData/*0:0*/ soc_top__DOT__cpu__DOT__cpuregs_write;
         CData/*0:0*/ soc_top__DOT__cpu__DOT____VdfgRegularize_h233421b0_0_0;
+        CData/*0:0*/ soc_top__DOT__decoder__DOT__timer0_sel;
+        CData/*0:0*/ soc_top__DOT__decoder__DOT__gpio_sel;
         CData/*0:0*/ soc_top__DOT__program_rom__DOT__ce;
         CData/*0:0*/ soc_top__DOT__data_ram__DOT__ce;
         CData/*0:0*/ soc_top__DOT__data_ram__DOT__we;
@@ -174,18 +189,76 @@ class alignas(VL_CACHE_LINE_BYTES) Vsoc_top___024root final : public VerilatedMo
         CData/*3:0*/ soc_top__DOT__gpio_inst__DOT__mem_wstrb;
         CData/*7:0*/ soc_top__DOT__gpio_inst__DOT__ddrb;
         CData/*7:0*/ soc_top__DOT__gpio_inst__DOT__portb;
+        CData/*7:0*/ soc_top__DOT__gpio_inst__DOT__ddrd;
+        CData/*7:0*/ soc_top__DOT__gpio_inst__DOT__portd;
+        CData/*7:0*/ soc_top__DOT__gpio_inst__DOT__ddrc;
+        CData/*7:0*/ soc_top__DOT__gpio_inst__DOT__portc;
         CData/*0:0*/ soc_top__DOT__gpio_inst__DOT__gpio_sel;
-        CData/*0:0*/ __VdfgRegularize_hebeb780c_0_0;
+        CData/*0:0*/ soc_top__DOT__ac_inst__DOT__mem_valid;
+        CData/*3:0*/ soc_top__DOT__ac_inst__DOT__mem_wstrb;
+        CData/*0:0*/ soc_top__DOT__ac_inst__DOT__acd;
+        CData/*0:0*/ soc_top__DOT__ac_inst__DOT__acbg;
+        CData/*0:0*/ soc_top__DOT__ac_inst__DOT__aci;
+        CData/*0:0*/ soc_top__DOT__ac_inst__DOT__acie;
+        CData/*0:0*/ soc_top__DOT__ac_inst__DOT__acic;
+        CData/*1:0*/ soc_top__DOT__ac_inst__DOT__acis;
+        CData/*0:0*/ soc_top__DOT__ac_inst__DOT__ac_out_sync_1;
+        CData/*0:0*/ soc_top__DOT__ac_inst__DOT__ac_out_sync_2;
+        CData/*0:0*/ soc_top__DOT__ac_inst__DOT__ac_out_prev;
+        CData/*0:0*/ soc_top__DOT__timer0_inst__DOT__mem_valid;
+        CData/*3:0*/ soc_top__DOT__timer0_inst__DOT__mem_wstrb;
+        CData/*1:0*/ soc_top__DOT__timer0_inst__DOT__com0a;
+        CData/*1:0*/ soc_top__DOT__timer0_inst__DOT__com0b;
+        CData/*1:0*/ soc_top__DOT__timer0_inst__DOT__wgm_low;
+        CData/*0:0*/ soc_top__DOT__timer0_inst__DOT__wgm_high;
+        CData/*2:0*/ soc_top__DOT__timer0_inst__DOT__cs;
+    };
+    struct {
+        CData/*7:0*/ soc_top__DOT__timer0_inst__DOT__tcnt0;
+        CData/*7:0*/ soc_top__DOT__timer0_inst__DOT__ocr0a;
+        CData/*7:0*/ soc_top__DOT__timer0_inst__DOT__ocr0b;
+        CData/*0:0*/ soc_top__DOT__timer0_inst__DOT__ocie0b;
+        CData/*0:0*/ soc_top__DOT__timer0_inst__DOT__ocie0a;
+        CData/*0:0*/ soc_top__DOT__timer0_inst__DOT__toie0;
+        CData/*0:0*/ soc_top__DOT__timer0_inst__DOT__ocf0b;
+        CData/*0:0*/ soc_top__DOT__timer0_inst__DOT__ocf0a;
+        CData/*0:0*/ soc_top__DOT__timer0_inst__DOT__tov0;
+        CData/*0:0*/ soc_top__DOT__timer0_inst__DOT__foc0a_pulse;
+        CData/*0:0*/ soc_top__DOT__timer0_inst__DOT__foc0b_pulse;
+        CData/*0:0*/ soc_top__DOT__timer0_inst__DOT__timer0_sel;
+        CData/*2:0*/ soc_top__DOT__timer0_inst__DOT__wgm;
+        CData/*7:0*/ soc_top__DOT__timer0_inst__DOT__top_value;
+        CData/*0:0*/ soc_top__DOT__timer0_inst__DOT__t0_sync1;
+        CData/*0:0*/ soc_top__DOT__timer0_inst__DOT__t0_sync2;
+        CData/*0:0*/ soc_top__DOT__timer0_inst__DOT__t0_prev;
+        CData/*0:0*/ soc_top__DOT__timer0_inst__DOT__timer_clk_en;
+        CData/*0:0*/ soc_top__DOT__timer0_inst__DOT__count_up;
+        CData/*0:0*/ soc_top__DOT__timer0_inst__DOT__at_top;
+        CData/*7:0*/ soc_top__DOT__timer0_inst__DOT__tcnt0_next;
+        CData/*0:0*/ soc_top__DOT__timer0_inst__DOT__overflow_event;
+        CData/*0:0*/ soc_top__DOT__timer0_inst__DOT__match_a_event;
+        CData/*0:0*/ soc_top__DOT__timer0_inst__DOT__match_b_event;
+        CData/*0:0*/ soc_top__DOT__timer0_inst__DOT__oc0a_reg;
+        CData/*0:0*/ soc_top__DOT__timer0_inst__DOT__oc0b_reg;
+        CData/*0:0*/ soc_top__DOT__timer0_inst__DOT__bus_write;
+        CData/*0:0*/ soc_top__DOT__timer0_inst__DOT__tifr0_write;
+        CData/*0:0*/ soc_top__DOT__timer0_inst__DOT____VdfgRegularize_ha0ab358d_0_0;
+        CData/*0:0*/ soc_top__DOT__timer0_inst__DOT____VdfgRegularize_ha0ab358d_0_1;
         CData/*0:0*/ __VstlFirstIteration;
         CData/*0:0*/ __VicoFirstIteration;
         CData/*0:0*/ __Vtrigprevexpr___TOP__clk__0;
+        CData/*0:0*/ __Vtrigprevexpr___TOP__rst_n__0;
         SData/*15:0*/ soc_top__DOT__cpu__DOT__mem_16bit_buffer;
         SData/*11:0*/ soc_top__DOT__data_ram__DOT__addr;
+        SData/*9:0*/ soc_top__DOT__timer0_inst__DOT__prescaler_cnt;
         IData/*31:0*/ soc_top__DOT__cpu_mem_addr;
         IData/*31:0*/ soc_top__DOT__cpu_mem_wdata;
         IData/*31:0*/ soc_top__DOT__cpu_mem_rdata;
         IData/*31:0*/ soc_top__DOT__rom_rdata;
         IData/*31:0*/ soc_top__DOT__ram_rdata;
+        IData/*31:0*/ soc_top__DOT__gpio_mem_rdata;
+        IData/*31:0*/ soc_top__DOT__ac_mem_rdata;
+        IData/*31:0*/ soc_top__DOT__timer0_mem_rdata;
         IData/*31:0*/ soc_top__DOT__cpu__DOT__mem_la_wdata;
         IData/*31:0*/ soc_top__DOT__cpu__DOT__pcpi_insn;
         IData/*31:0*/ soc_top__DOT__cpu__DOT__eoi;
@@ -205,6 +278,8 @@ class alignas(VL_CACHE_LINE_BYTES) Vsoc_top___024root final : public VerilatedMo
         IData/*31:0*/ soc_top__DOT__cpu__DOT__mem_rdata_word;
         IData/*31:0*/ soc_top__DOT__cpu__DOT__mem_rdata_q;
         IData/*31:0*/ soc_top__DOT__cpu__DOT__mem_rdata_latched_noshuffle;
+    };
+    struct {
         IData/*31:0*/ soc_top__DOT__cpu__DOT__decoded_imm;
         IData/*31:0*/ soc_top__DOT__cpu__DOT__decoded_imm_j;
         IData/*31:0*/ soc_top__DOT__cpu__DOT__dbg_insn_imm;
@@ -212,8 +287,6 @@ class alignas(VL_CACHE_LINE_BYTES) Vsoc_top___024root final : public VerilatedMo
         IData/*31:0*/ soc_top__DOT__cpu__DOT__dbg_rs2val;
         IData/*31:0*/ soc_top__DOT__cpu__DOT__q_insn_imm;
         IData/*31:0*/ soc_top__DOT__cpu__DOT__q_insn_opcode;
-    };
-    struct {
         IData/*31:0*/ soc_top__DOT__cpu__DOT__cached_insn_imm;
         IData/*31:0*/ soc_top__DOT__cpu__DOT__cached_insn_opcode;
         VlWide<4>/*127:0*/ soc_top__DOT__cpu__DOT__dbg_ascii_state;
@@ -224,9 +297,14 @@ class alignas(VL_CACHE_LINE_BYTES) Vsoc_top___024root final : public VerilatedMo
         IData/*31:0*/ soc_top__DOT__cpu__DOT__cpuregs_wrdata;
         IData/*31:0*/ soc_top__DOT__cpu__DOT__cpuregs_rs1;
         IData/*31:0*/ soc_top__DOT__cpu__DOT__cpuregs_rs2;
+        IData/*31:0*/ soc_top__DOT__program_rom__DOT__i;
         IData/*31:0*/ soc_top__DOT__data_ram__DOT__i;
         IData/*31:0*/ soc_top__DOT__gpio_inst__DOT__mem_addr;
         IData/*31:0*/ soc_top__DOT__gpio_inst__DOT__mem_wdata;
+        IData/*31:0*/ soc_top__DOT__ac_inst__DOT__mem_addr;
+        IData/*31:0*/ soc_top__DOT__ac_inst__DOT__mem_wdata;
+        IData/*31:0*/ soc_top__DOT__timer0_inst__DOT__mem_addr;
+        IData/*31:0*/ soc_top__DOT__timer0_inst__DOT__mem_wdata;
         IData/*31:0*/ __VactIterCount;
         QData/*35:0*/ soc_top__DOT__cpu__DOT__trace_data;
         QData/*63:0*/ soc_top__DOT__cpu__DOT__count_cycle;

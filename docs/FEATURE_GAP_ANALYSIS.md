@@ -64,7 +64,8 @@
   - Interrupt-driven operation
   
 - ✅ **SPI (Serial Peripheral Interface)** - **COMPLETED**
-  - Master/slave mode
+  - Master/slave mode with correct bidirectional data handling
+  - Slave receives on MOSI, transmits on MISO (proper SPI convention)
   - All 4 SPI modes (CPOL/CPHA combinations)
   - 8 clock rate options (fosc/2, /4, /8, /16, /32, /64, /128)
   - MSB/LSB first data order
@@ -180,7 +181,7 @@
 | Timer/Counter 1 | High | ~800 lines |
 | Timer/Counter 2 | Medium | ~500 lines | ✅ **COMPLETED** |
 | USART | High | ~600 lines |
-| SPI | Medium | ~400 lines | ✅ **COMPLETED** |
+| SPI | Medium | ~490 lines | ✅ **COMPLETED** |
 | I2C/TWI | High | ~600 lines |
 | ADC | High | ~800 lines |
 | Analog Comparator | Low | ~150 lines | ✅ **COMPLETED** |

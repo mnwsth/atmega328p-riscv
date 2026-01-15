@@ -7,29 +7,29 @@ This project implements a RISC-V based System-on-Chip (SoC) that replicates the 
 ## System Architecture
 
 ```
-┌──────────────────────────────────────────────────────────────────┐
-│                         SoC Top Level                             │
-│                                                                   │
-│  ┌──────────┐                                                    │
-│  │ PicoRV32 │                                                    │
-│  │   Core   │                                                    │
-│  └────┬─────┘                                                    │
-│       │ Memory Bus                                               │
-│       │                                                          │
-│  ┌────▼─────────────────────────────────────────────────────┐   │
-│  │                    Bus Decoder                            │   │
-│  └────┬──────────┬──────────┬────────────┬────────────────┘   │
-│       │          │          │            │                      │
-│  ┌────▼──┐  ┌───▼───┐  ┌───▼────┐  ┌────▼─────┐  ┌─────────┐  │
-│  │  ROM  │  │  RAM  │  │  GPIO  │  │  Analog  │  │ Timer0  │  │
-│  │ 64KB  │  │  4KB  │  │B, C, D │  │Comparator│  │  8-bit  │  │
-│  └───────┘  └───────┘  └────────┘  └──────────┘  └─────────┘  │
-│                                                                │
-│                                    ┌──────────┐                │
-│                                    │ Watchdog │                │
-│                                    │  Timer   │                │
-│                                    └──────────┘                │
-└──────────────────────────────────────────────────────────────────┘
+┌────────────────────────────────────────────────────────────────────────┐
+│                            SoC Top Level                               │
+│                                                                        │
+│  ┌──────────┐                                                          │
+│  │ PicoRV32 │                                                          │
+│  │   Core   │                                                          │
+│  └────┬─────┘                                                          │
+│       │ Memory Bus                                                     │
+│       │                                                                │
+│  ┌────▼────────────────────────────────────────────────────────────┐   │
+│  │                         Bus Decoder                              │   │
+│  └────┬──────────┬──────────┬────────────┬──────────┬───────────┘   │
+│       │          │          │            │          │                  │
+│  ┌────▼──┐  ┌───▼───┐  ┌───▼────┐  ┌────▼─────┐  ┌─▼──────┐          │
+│  │  ROM  │  │  RAM  │  │  GPIO  │  │  Analog  │  │ Timer0 │          │
+│  │ 64KB  │  │  4KB  │  │B, C, D │  │Comparator│  │ 8-bit  │          │
+│  └───────┘  └───────┘  └────────┘  └──────────┘  └────────┘          │
+│                                                                        │
+│  ┌────────┐  ┌──────────┐  ┌─────┐                                    │
+│  │ Timer2 │  │ Watchdog │  │ SPI │                                    │
+│  │ 8-bit  │  │  Timer   │  │     │                                    │
+│  └────────┘  └──────────┘  └─────┘                                    │
+└────────────────────────────────────────────────────────────────────────┘
 ```
 
 ## Memory Map
@@ -91,6 +91,26 @@ This project implements a RISC-V based System-on-Chip (SoC) that replicates the 
 | 0x20000054 | MCUSR    | MCU Status Register (WDRF bit)        |
 | 0x20000060 | WDTCSR   | Watchdog Timer Control and Status     |
 | 0x20000061 | WDR      | Watchdog Reset (write 0xA5 to reset)  |
+
+#### Timer/Counter 2 Registers
+
+| Address    | Register | Description                          |
+|------------|----------|--------------------------------------|
+| 0x20000037 | TIFR2    | Timer Interrupt Flag Register         |
+| 0x20000070 | TIMSK2   | Timer Interrupt Mask Register         |
+| 0x200000B0 | TCCR2A   | Timer Control Register A              |
+| 0x200000B1 | TCCR2B   | Timer Control Register B              |
+| 0x200000B2 | TCNT2    | Timer Counter Register                |
+| 0x200000B3 | OCR2A    | Output Compare Register A             |
+| 0x200000B4 | OCR2B    | Output Compare Register B             |
+
+#### SPI Registers
+
+| Address    | Register | Description                          |
+|------------|----------|--------------------------------------|
+| 0x2000004C | SPCR     | SPI Control Register                  |
+| 0x2000004D | SPSR     | SPI Status Register                   |
+| 0x2000004E | SPDR     | SPI Data Register                     |
 
 ## Components
 
@@ -220,6 +240,71 @@ This project implements a RISC-V based System-on-Chip (SoC) that replicates the 
   - Full integration test with C firmware
   - Timed sequence window extended to 32 cycles for RISC-V compatibility
 
+### 9. Timer/Counter 2
+
+- **Registers**: TCCR2A, TCCR2B, TCNT2, OCR2A, OCR2B, TIMSK2, TIFR2
+- **Functionality**:
+  - 8-bit counter with multiple operating modes
+  - Timer2-specific prescaler options: 1, 8, 32, 64, 128, 256, 1024
+  - Waveform Generation Modes:
+    - Normal mode (count 0x00 to 0xFF)
+    - CTC mode (Clear Timer on Compare Match)
+    - Fast PWM mode
+    - Phase Correct PWM mode
+  - Two Output Compare units (OC2A, OC2B) with configurable behavior:
+    - Toggle, Clear, or Set on compare match
+    - PWM output generation
+  - Interrupt sources:
+    - Timer Overflow (TOV2)
+    - Compare Match A (OCF2A)
+    - Compare Match B (OCF2B)
+  - Force Output Compare capability (FOC2A, FOC2B)
+- **External Pins**:
+  - OC2A: Output Compare A output
+  - OC2B: Output Compare B output
+- **Implementation Notes**:
+  - Full ATmega328P register compatibility
+  - Timer2-specific prescaler (includes /32 and /128 options not in Timer0)
+  - 33 comprehensive unit tests verify all functionality
+
+### 10. SPI (Serial Peripheral Interface)
+
+- **Registers**: SPCR, SPSR, SPDR
+- **Functionality**:
+  - Master and Slave modes
+  - All 4 SPI modes supported (CPOL/CPHA combinations):
+    - Mode 0: CPOL=0, CPHA=0 (sample on rising, shift on falling)
+    - Mode 1: CPOL=0, CPHA=1 (sample on falling, shift on rising)
+    - Mode 2: CPOL=1, CPHA=0 (sample on falling, shift on rising)
+    - Mode 3: CPOL=1, CPHA=1 (sample on rising, shift on falling)
+  - 8 clock rate options via SPI2X, SPR1, SPR0:
+    - fosc/2, /4, /8, /16, /32, /64, /128
+  - MSB or LSB first data order (DORD bit)
+  - Interrupt on transfer complete (SPIF flag)
+  - Write collision detection (WCOL flag)
+- **SPCR Register Bits**:
+  - Bit 7: SPIE (SPI Interrupt Enable)
+  - Bit 6: SPE (SPI Enable)
+  - Bit 5: DORD (Data Order, 0=MSB first, 1=LSB first)
+  - Bit 4: MSTR (Master/Slave Select)
+  - Bit 3: CPOL (Clock Polarity)
+  - Bit 2: CPHA (Clock Phase)
+  - Bits 1:0: SPR (SPI Clock Rate Select)
+- **SPSR Register Bits**:
+  - Bit 7: SPIF (SPI Interrupt Flag, read-only)
+  - Bit 6: WCOL (Write Collision Flag, read-only)
+  - Bit 0: SPI2X (Double SPI Speed)
+- **External Pins**:
+  - SCK: Serial Clock (output in Master mode)
+  - MOSI: Master Out Slave In (output in Master, input in Slave)
+  - MISO: Master In Slave Out (input in Master, output in Slave)
+  - SS_n: Slave Select (active low, input in Slave mode)
+- **Implementation Notes**:
+  - Proper bidirectional data handling for Master/Slave modes
+  - Slave mode uses separate mosi_in (receive) and miso_out/miso_oe (transmit) signals
+  - SPIF cleared by reading SPSR then SPDR sequence
+  - 33 comprehensive unit tests + 8 integration tests
+
 ## Bus Protocol
 
 The system uses PicoRV32's memory bus protocol with **word-aligned addressing**:
@@ -280,14 +365,14 @@ When accessing a byte-addressed register (e.g., PORTB at 0x25):
 
 ## Future Enhancements
 
-- Timer/Counter 1 (16-bit timer)
-- Timer/Counter 2 (8-bit timer with async mode)
-- UART (Serial communication)
-- SPI interface
-- I2C (TWI) interface
+- Timer/Counter 1 (16-bit timer with input capture)
+- USART (Serial communication)
+- I2C/TWI (Two-Wire Interface)
 - ADC (Analog-to-Digital Converter)
 - Interrupt controller
 - EEPROM emulation
+- Power management (sleep modes)
+- Brown-out detection
 
 ## Design Notes
 
