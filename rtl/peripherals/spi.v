@@ -24,13 +24,16 @@ module spi (
     output reg         mem_ready,
     
     // SPI Pins
-    output wire        sck,      // Serial Clock (output in Master, input in Slave)
-    output wire        mosi,     // Master Out Slave In
-    input  wire        miso,     // Master In Slave Out
-    input  wire        ss_n,     // Slave Select (active low, input in Slave mode)
+    output wire        sck,       // Serial Clock (output in Master mode)
+    output wire        mosi,      // Master Out Slave In (active in Master mode)
+    input  wire        miso,      // Master In Slave Out (sampled in Master mode)
+    output wire        miso_out,  // Slave data output (active in Slave mode, directly drives MISO)
+    output wire        miso_oe,   // Slave data output enable (active in Slave mode)
+    input  wire        mosi_in,   // Slave data input (sampled in Slave mode, directly from MOSI)
+    input  wire        ss_n,      // Slave Select (active low, input in Slave mode)
     
     // Directly drive internal SCK for slave mode input
-    input  wire        sck_in,   // External SCK input for slave mode
+    input  wire        sck_in,    // External SCK input for slave mode
     
     // Interrupt output
     output wire        irq_spi
@@ -308,10 +311,11 @@ module spi (
                             state <= STATE_IDLE;
                         end else begin
                             if (slave_sample) begin
+                                // Slave receives on MOSI (mosi_in)
                                 if (dord)
-                                    shift_reg <= {miso, shift_reg[7:1]};
+                                    shift_reg <= {mosi_in, shift_reg[7:1]};
                                 else
-                                    shift_reg <= {shift_reg[6:0], miso};
+                                    shift_reg <= {shift_reg[6:0], mosi_in};
                                 sample_cnt <= sample_cnt + 1'b1;
                             end
                             
@@ -346,12 +350,22 @@ module spi (
     end
     
     // =========================================================================
-    // MOSI Output
+    // MOSI Output (Master mode)
     // =========================================================================
     
     // Output the current bit being transmitted
-    wire mosi_bit = dord ? shift_reg[0] : shift_reg[7];
-    assign mosi = (spe && transfer_active) ? mosi_bit : 1'b0;
+    wire tx_bit = dord ? shift_reg[0] : shift_reg[7];
+    
+    // Master mode: output on MOSI
+    assign mosi = (spe && mstr && transfer_active) ? tx_bit : 1'b0;
+    
+    // =========================================================================
+    // MISO Output (Slave mode)
+    // =========================================================================
+    
+    // Slave mode: output on MISO
+    assign miso_out = tx_bit;
+    assign miso_oe  = spe && !mstr && slave_selected && transfer_active;
     
     // =========================================================================
     // SCK Output

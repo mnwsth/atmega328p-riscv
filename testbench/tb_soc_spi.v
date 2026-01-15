@@ -45,6 +45,9 @@ module tb_soc_spi;
     wire spi_sck;
     wire spi_mosi;
     reg  spi_miso;
+    wire spi_miso_out;
+    wire spi_miso_oe;
+    reg  spi_mosi_in;
     reg  spi_ss_n;
     reg  spi_sck_in;
     
@@ -82,6 +85,9 @@ module tb_soc_spi;
         .spi_sck(spi_sck),
         .spi_mosi(spi_mosi),
         .spi_miso(spi_miso),
+        .spi_miso_out(spi_miso_out),
+        .spi_miso_oe(spi_miso_oe),
+        .spi_mosi_in(spi_mosi_in),
         .spi_ss_n(spi_ss_n),
         .spi_sck_in(spi_sck_in)
     );
@@ -109,6 +115,7 @@ module tb_soc_spi;
         t0_pin = 0;
         spi_ss_n = 1;
         spi_sck_in = 0;
+        spi_mosi_in = 0;
         prev_portb = 8'h00;
         tests_detected = 8'h00;
         

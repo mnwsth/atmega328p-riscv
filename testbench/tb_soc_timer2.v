@@ -41,10 +41,20 @@ module tb_soc_timer2;
     // Watchdog
     wire wdt_reset_req;
     
+    // SPI signals (tie off unused)
+    wire spi_sck;
+    wire spi_mosi;
+    wire spi_miso = spi_mosi;
+    wire spi_miso_out;
+    wire spi_miso_oe;
+    wire spi_mosi_in = 1'b0;
+    wire spi_ss_n = 1'b1;
+    wire spi_sck_in = 1'b0;
+
     // Test tracking
     integer errors;
     integer test_num;
-    
+
     // Instantiate DUT
     soc_top dut (
         .clk(clk),
@@ -65,7 +75,15 @@ module tb_soc_timer2;
         .oc0b(oc0b),
         .oc2a(oc2a),
         .oc2b(oc2b),
-        .wdt_reset_req(wdt_reset_req)
+        .wdt_reset_req(wdt_reset_req),
+        .spi_sck(spi_sck),
+        .spi_mosi(spi_mosi),
+        .spi_miso(spi_miso),
+        .spi_miso_out(spi_miso_out),
+        .spi_miso_oe(spi_miso_oe),
+        .spi_mosi_in(spi_mosi_in),
+        .spi_ss_n(spi_ss_n),
+        .spi_sck_in(spi_sck_in)
     );
     
     // Clock generation (100MHz = 10ns period)

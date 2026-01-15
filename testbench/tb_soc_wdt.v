@@ -42,6 +42,20 @@ module tb_soc_wdt;
 
     // Watchdog Timer
     wire wdt_reset_req;
+    
+    // Timer2 signals
+    wire oc2a;
+    wire oc2b;
+    
+    // SPI signals (tie off unused)
+    wire spi_sck;
+    wire spi_mosi;
+    wire spi_miso = spi_mosi;
+    wire spi_miso_out;
+    wire spi_miso_oe;
+    wire spi_mosi_in = 1'b0;
+    wire spi_ss_n = 1'b1;
+    wire spi_sck_in = 1'b0;
 
     // Test tracking
     integer cycle_count;
@@ -69,7 +83,17 @@ module tb_soc_wdt;
         .t0_pin(t0_pin),
         .oc0a(oc0a),
         .oc0b(oc0b),
-        .wdt_reset_req(wdt_reset_req)
+        .oc2a(oc2a),
+        .oc2b(oc2b),
+        .wdt_reset_req(wdt_reset_req),
+        .spi_sck(spi_sck),
+        .spi_mosi(spi_mosi),
+        .spi_miso(spi_miso),
+        .spi_miso_out(spi_miso_out),
+        .spi_miso_oe(spi_miso_oe),
+        .spi_mosi_in(spi_mosi_in),
+        .spi_ss_n(spi_ss_n),
+        .spi_sck_in(spi_sck_in)
     );
 
     // Clock generation (10ns period = 100MHz)

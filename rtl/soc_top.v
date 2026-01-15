@@ -44,8 +44,11 @@ module soc_top (
     output wire        spi_sck,
     output wire        spi_mosi,
     input  wire        spi_miso,
+    output wire        spi_miso_out,  // Slave mode data output (directly drives MISO)
+    output wire        spi_miso_oe,   // Slave mode data output enable
+    input  wire        spi_mosi_in,   // Slave mode data input (directly from MOSI)
     input  wire        spi_ss_n,
-    input  wire        spi_sck_in   // External SCK input for slave mode
+    input  wire        spi_sck_in     // External SCK input for slave mode
 );
 
     // CPU memory interface
@@ -364,6 +367,9 @@ module soc_top (
         .sck(spi_sck),
         .mosi(spi_mosi),
         .miso(spi_miso),
+        .miso_out(spi_miso_out),
+        .miso_oe(spi_miso_oe),
+        .mosi_in(spi_mosi_in),
         .ss_n(spi_ss_n),
         .sck_in(spi_sck_in),
         .irq_spi(spi_irq)

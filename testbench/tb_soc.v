@@ -33,6 +33,23 @@ module tb_soc;
     wire oc0a;
     wire oc0b;
     
+    // Timer2 signals
+    wire oc2a;
+    wire oc2b;
+    
+    // Watchdog Timer signals
+    wire wdt_reset_req;
+    
+    // SPI signals (directly tie off unused ports)
+    wire spi_sck;
+    wire spi_mosi;
+    wire spi_miso = spi_mosi;  // Loopback
+    wire spi_miso_out;
+    wire spi_miso_oe;
+    wire spi_mosi_in = 1'b0;
+    wire spi_ss_n = 1'b1;
+    wire spi_sck_in = 1'b0;
+    
     // Instantiate DUT
     soc_top dut (
         .clk(clk),
@@ -50,7 +67,18 @@ module tb_soc;
         .ain1(ain1),
         .t0_pin(t0_pin),
         .oc0a(oc0a),
-        .oc0b(oc0b)
+        .oc0b(oc0b),
+        .oc2a(oc2a),
+        .oc2b(oc2b),
+        .wdt_reset_req(wdt_reset_req),
+        .spi_sck(spi_sck),
+        .spi_mosi(spi_mosi),
+        .spi_miso(spi_miso),
+        .spi_miso_out(spi_miso_out),
+        .spi_miso_oe(spi_miso_oe),
+        .spi_mosi_in(spi_mosi_in),
+        .spi_ss_n(spi_ss_n),
+        .spi_sck_in(spi_sck_in)
     );
     
     // Clock generation (10MHz = 100ns period)
