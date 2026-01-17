@@ -15,9 +15,18 @@ add_files -fileset sources_1 {
     ../../rtl/memory/rom.v
     ../../rtl/memory/ram.v
     ../../rtl/peripherals/gpio.v
+    ../../rtl/peripherals/analog_comparator.v
+    ../../rtl/peripherals/timer0.v
+    ../../rtl/peripherals/timer2.v
+    ../../rtl/peripherals/watchdog_timer.v
+    ../../rtl/peripherals/spi.v
     ../../rtl/bus/bus_decoder.v
+    ../../rtl/bus/memory_map.vh
     ../../rtl/soc_top.v
 }
+
+# Set include directories for Verilog `include statements
+set_property include_dirs {../../rtl} [current_fileset]
 
 # Add constraints
 add_files -fileset constrs_1 {
