@@ -51,4 +51,3 @@ module ram #(
     end
 
 endmodule
-

@@ -153,4 +153,3 @@ module gpio (
     end
 
 endmodule
-
