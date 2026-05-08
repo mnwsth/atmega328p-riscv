@@ -1,6 +1,6 @@
 # ATmega328P RISC-V Replica
 
-This project implements a RISC-V based System-on-Chip (SoC) that replicates the functionality of an ATmega328P microcontroller. The initial implementation includes GPIO support to run a simple LED blinking program on an FPGA.
+This project implements a RISC-V based System-on-Chip (SoC) that replicates the functionality of an ATmega328P microcontroller. The initial implementation includes GPIO support to run a simple LED blinking program on an FPGA. This current version of the implementation also includes tests verifying the functioning of the SPI module, where our microcontroller is used to communicate with multiple other microcontrollers. 
 
 ## Project Structure
 
@@ -133,21 +133,23 @@ make bitstream
 
 ## Current Status
 
-- ✅ RISC-V core integration (PicoRV32)
-- ✅ Memory system (ROM and RAM)
-- ✅ GPIO peripheral (Port B, Port C, and Port D)
-- ✅ Bus decoder
-- ✅ Simple blinky firmware + more complex (factorial calculator) test
-- ✅ Comprehensive test suites (27 Timer0 unit tests)
+- RISC-V core integration (PicoRV32)
+- Memory system (ROM and RAM)
+- GPIO peripheral (Port B, Port C, and Port D)
+- Bus decoder
+- Simple blinky firmware + more complex (factorial calculator) test
+- Comprehensive test suites (27 Timer0 unit tests)
 - SPI Module
 - Integration tests to verify working of GPIO and SPI
-- ⏳ Full ATmega328P peripheral set (in progress)
+- Full ATmega328P peripheral set (in progress)
 
 ## Next Steps
 
 - Implement Timer/Counter 1 (16-bit)
 - Add UART support
 - Add interrupt controller
+- Add i2c support
+- JTAG Module
 
 
 ## License
