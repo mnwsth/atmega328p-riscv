@@ -136,21 +136,19 @@ make bitstream
 - ✅ RISC-V core integration (PicoRV32)
 - ✅ Memory system (ROM and RAM)
 - ✅ GPIO peripheral (Port B, Port C, and Port D)
-- ✅ Analog Comparator
-- ✅ Timer/Counter 0 (8-bit with PWM, prescaler, compare match)
 - ✅ Bus decoder
-- ✅ Simple blinky firmware
+- ✅ Simple blinky firmware + more complex (factorial calculator) test
 - ✅ Comprehensive test suites (27 Timer0 unit tests)
+- SPI Module
+- Integration tests to verify working of GPIO and SPI
 - ⏳ Full ATmega328P peripheral set (in progress)
 
 ## Next Steps
 
 - Implement Timer/Counter 1 (16-bit)
-- Implement Timer/Counter 2 (8-bit)
 - Add UART support
-- Implement ADC
 - Add interrupt controller
-- Implement EEPROM emulation
+
 
 ## License
 
